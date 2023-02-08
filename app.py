@@ -3,8 +3,7 @@ from pathlib import Path
 from flask import Flask
 
 import controller
-
-from service import db
+from database import db
 
 basedir = Path(__file__).parent
 
