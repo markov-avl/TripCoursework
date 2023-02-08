@@ -17,3 +17,10 @@ class CityService:
         if city := self._city_repository.find_by_id(id_):
             return city
         abort(404)
+
+    def create(self, name: str) -> City:
+        city = City(
+            name=name
+        )
+        self._city_repository.save(city)
+        return city

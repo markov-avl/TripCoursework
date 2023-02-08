@@ -17,16 +17,3 @@ class Route(Entity):
     ends_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
     city: City = relationship(City, lazy=LAZY_MODE)
-
-    def __init__(self,
-                 city: int | City = None,
-                 secret: str = None,
-                 starts_at: datetime = None,
-                 ends_at: datetime = None):
-        if isinstance(city, int):
-            self.city_id = city
-        if isinstance(city, City):
-            self.city = city
-        self.secret = secret
-        self.starts_at = starts_at
-        self.ends_at = ends_at

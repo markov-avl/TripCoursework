@@ -4,7 +4,7 @@ from typing import Type, Any, Sequence
 from sqlalchemy import select, Result
 from sqlalchemy.sql import Select
 
-from database import db
+from database import database
 from entity import Entity
 
 
@@ -14,7 +14,7 @@ class Repository(ABC):
 
     @staticmethod
     def _execute(statement: Select) -> Result:
-        return db.session.execute(statement)
+        return database.session.execute(statement)
 
     @staticmethod
     def _fetch(statement: Select) -> Any:
@@ -28,13 +28,13 @@ class Repository(ABC):
 
     @staticmethod
     def save(*entities: Entity) -> None:
-        db.session.add_all(entities)
-        db.session.commit()
+        database.session.add_all(entities)
+        database.session.commit()
 
     @staticmethod
     def delete(entity: Entity) -> None:
-        db.session.delete(entity)
-        db.session.commit()
+        database.session.delete(entity)
+        database.session.commit()
 
     def find_all(self) -> Sequence[Any]:
         statement = select(self._entity_type)
