@@ -1,8 +1,10 @@
 from .entity import Entity
-from .coordinate import Coordinate
-from .route import Route
-from .city import City
-from .road import Road
-from .place import Place
+
 from .checkpoint import Checkpoint
+from .city import City
+from .coordinate import Coordinate
+from .place import Place
+from .road import Road
+from .route import Route
+
 from .priority import Priority

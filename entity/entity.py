@@ -1,7 +1,7 @@
 import re
 from typing import Type
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Column
 from sqlalchemy.orm import as_declarative, declared_attr
 
 PATTERN = re.compile(r'(?<!^)(?=[A-Z])')
@@ -12,7 +12,7 @@ PK_COLUMN = 'id'
 @as_declarative()
 class Entity:
     __tablename__: str
-    id: int
+    id: Column
 
     @declared_attr
     def __tablename__(cls):
