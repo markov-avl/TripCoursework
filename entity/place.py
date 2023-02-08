@@ -17,19 +17,3 @@ class Place(Entity):
 
     city: City = relationship(City, lazy=LAZY_MODE)
     coordinate: Coordinate = relationship(Coordinate, lazy=LAZY_MODE)
-
-    def __init__(self,
-                 city: int | City = None,
-                 coordinate: int | Coordinate = None,
-                 name: str = None,
-                 address: str = None):
-        if isinstance(city, int):
-            self.city_id = city
-        if isinstance(city, City):
-            self.city = city
-        if isinstance(coordinate, int):
-            self.coordinate_id = coordinate
-        if isinstance(city, Coordinate):
-            self.coordinate = coordinate
-        self.name = name
-        self.address = address

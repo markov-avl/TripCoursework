@@ -17,3 +17,11 @@ class CoordinateService:
         if coordinate := self._coordinate_repository.find_by_id(id_):
             return coordinate
         abort(404)
+
+    def create(self, latitude: float, longitude: float) -> Coordinate:
+        coordinate = Coordinate(
+            latitude=latitude,
+            longitude=longitude
+        )
+        self._coordinate_repository.save(coordinate)
+        return coordinate

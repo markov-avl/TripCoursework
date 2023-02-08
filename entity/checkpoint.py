@@ -21,21 +21,3 @@ class Checkpoint(Entity):
 
     route: Route = relationship(Route, lazy=LAZY_MODE)
     place: Place = relationship(Place, lazy=LAZY_MODE)
-
-    def __init__(self,
-                 route: int | Route = None,
-                 place: int | Place = None,
-                 stay_time: timedelta = None,
-                 money: float = None,
-                 priority: Priority = None):
-        if isinstance(route, int):
-            self.route_id = route
-        if isinstance(route, Route):
-            self.route = route
-        if isinstance(place, int):
-            self.place_id = place
-        if isinstance(place, Place):
-            self.place = place
-        self.stay_time = stay_time
-        self.money = money
-        self.priority = priority
