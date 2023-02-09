@@ -20,6 +20,9 @@ class RoadService:
             return road
         abort(404)
 
+    def get_by_city(self, city: City) -> Sequence[Road]:
+        return self._road_repository.find_by_city(city)
+
     def create(self,
                city: City,
                edge_0: Coordinate,
