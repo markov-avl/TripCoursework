@@ -1,6 +1,6 @@
 from typing import Any, Sequence
 
-from entity import Place
+from entity import Place, City
 from .repository import Repository
 
 
@@ -16,3 +16,6 @@ class PlaceRepository(Repository):
 
     def find_by_id(self, id_: int) -> Place | None:
         return super().find_by_id(id_)
+
+    def find_by_city(self, city: City) -> Sequence[Place]:
+        return self.find_by(Place.city == city)

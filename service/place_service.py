@@ -20,6 +20,9 @@ class PlaceService:
             return place
         abort(404)
 
+    def get_by_city(self, city: City) -> Sequence[Place]:
+        return self._place_repository.find_by_city(city)
+
     def create(self,
                city: City,
                coordinate: Coordinate,
