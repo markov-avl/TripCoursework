@@ -5,37 +5,60 @@ from geopy.distance import geodesic
 from matplotlib import pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
-from entity import Road, Place
+from entity import Road, Place, City
+from service import RoadService, PlaceService
 
 
 class MapVisualizer:
-    @staticmethod
-    def print(roads: Sequence[Road], places: Sequence[Place]) -> BytesIO:
-        min_latitude, max_latitude, center_latitude = MapVisualizer._get_latitudes(roads, places)
-        min_longitude, max_longitude, center_longitude = MapVisualizer._get_longitudes(roads, places)
+    def __init__(self, city: City):
+        self._city = city
+        self._road_service = RoadService()
+        self._place_service = PlaceService()
 
-        width, height = MapVisualizer._get_size(min_latitude, max_latitude, min_longitude, max_longitude)
+    def print(self, with_roads: bool = True, with_places: bool = True) -> BytesIO:
+        image = BytesIO()
+
+        roads = self._road_service.get_by_city(self._city) if with_roads else []
+        places = self._place_service.get_by_city(self._city) if with_places else []
+
+        if not roads and not places:
+            return image
+
+        min_latitude, max_latitude, center_latitude = self._get_latitudes(roads, places)
+        min_longitude, max_longitude, center_longitude = self._get_longitudes(roads, places)
+        width, height = self._get_size(min_latitude, max_latitude, min_longitude, max_longitude)
 
         fig, ax = plt.subplots(frameon=False)
         m = Basemap(projection='gnom', lat_0=center_latitude, lon_0=center_longitude, width=width, height=height)
 
-        bbox = dict(facecolor='w', alpha=1)
+        self._print_roads(m, roads)
+        self._print_places(m, places)
 
-        for road in roads:
-            x = [road.edge_0.longitude, road.edge_1.longitude]
-            y = [road.edge_0.latitude, road.edge_1.latitude]
-            m.plot(x, y, latlon=True, color='black')
-            plt.text(*m(*road.center), road.id, fontsize=6, va='center', bbox=bbox)
-
-        for place in places:
-            x, y = m(place.coordinate.longitude, place.coordinate.latitude)
-            plt.scatter(x, y, s=3, color='r')
-            plt.text(x + 15, y, place.name, fontsize=6, va='center', bbox=bbox)
-
-        image = BytesIO()
-        fig.savefig(image, dpi=400.0, format='png', bbox_inches='tight', pad_inches=0)
+        fig.savefig(image, dpi=600.0, format='png', bbox_inches='tight', pad_inches=0)
 
         return image
+
+    @staticmethod
+    def _print_roads(m: Basemap, roads: Sequence[Road], with_points: bool = False) -> None:
+        for road in roads:
+            x = (road.edge_0.longitude, road.edge_1.longitude)
+            y = (road.edge_0.latitude, road.edge_1.latitude)
+            m.plot(x, y, latlon=True, color='black', linewidth=0.5)
+        if with_points:
+            edges = {}
+            for road in roads:
+                edges[road.edge_0.id] = road.edge_0
+                edges[road.edge_1.id] = road.edge_1
+            for edge in edges.values():
+                plt.text(*m(edge.longitude, edge.latitude), edge.id - 1, fontsize=1, va='center', color='r')
+
+    @staticmethod
+    def _print_places(m: Basemap, places: Sequence[Place], with_names: bool = False) -> None:
+        x, y = m([place.coordinate.longitude for place in places], [place.coordinate.latitude for place in places])
+        plt.scatter(x, y, s=0.3, color='r')
+        if with_names:
+            for i, place in enumerate(places):
+                plt.text(x[i], y[i], place.name, fontsize=2, va='center', bbox=dict(facecolor='w', alpha=1))
 
     @staticmethod
     def _get_latitudes(roads: Sequence[Road], places: Sequence[Place]) -> tuple[float, float, float]:

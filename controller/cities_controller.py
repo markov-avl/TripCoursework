@@ -1,22 +1,22 @@
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 
 from controller.method import Method
 from model import MapVisualizer
-from service import CityService, RoadService, PlaceService
+from service import CityService
 
 blueprint = Blueprint('cities', __name__, url_prefix='/cities')
 
 city_service = CityService()
-road_service = RoadService()
-place_service = PlaceService()
 
 
 @blueprint.route('/<int:city_id>/map', methods=[Method.GET])
 def map_(city_id: int):
     city = city_service.get_by_id(city_id)
-    roads = road_service.get_by_city(city)
-    places = place_service.get_by_city(city)
+    map_visualizer = MapVisualizer(city)
 
-    image = MapVisualizer.print(roads, places)
+    with_roads = request.args.get('roads', 'true') != 'false'
+    with_places = request.args.get('places', 'true') != 'false'
+
+    image = map_visualizer.print(with_roads, with_places)
 
     return Response(image.getvalue(), mimetype='image/png')
