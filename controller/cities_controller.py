@@ -1,17 +1,19 @@
-from flask import Blueprint, Response, request, abort
+from flask import Blueprint, Response, request, abort, render_template
 
 from controller.method import Method
 from model import MapVisualizer, NearestRoadSearcher
-from service import CityService, PlaceService
+from service import CityService, PlaceService, RoadService, ImageService
 
 blueprint = Blueprint('cities', __name__, url_prefix='/cities')
 
 city_service = CityService()
 place_service = PlaceService()
+road_service = RoadService()
+image_service = ImageService()
 
 
 @blueprint.route('/<int:city_id>/map', methods=[Method.GET])
-def map_(city_id: int):
+def _map(city_id: int):
     city = city_service.get_by_id(city_id)
     map_visualizer = MapVisualizer(city)
 
@@ -24,8 +26,21 @@ def map_(city_id: int):
     return Response(image.getvalue(), mimetype='image/png')
 
 
-@blueprint.route('/<int:city_id>/nearest-road', methods=[Method.GET])
-def nearest_road(city_id: int):
+@blueprint.route('/<int:city_id>/roads', methods=[Method.GET])
+def _roads(city_id: int):
+    city = city_service.get_by_id(city_id)
+    roads = road_service.get_by_city(city)
+
+    return render_template(
+        'template.jinja2',
+        city=city,
+        roads=roads,
+        map_path=image_service.get_city_roads(city)
+    )
+
+
+@blueprint.route('/<int:city_id>/nearest-roads', methods=[Method.GET])
+def _nearest_roads(city_id: int):
     city = city_service.get_by_id(city_id)
     map_visualizer = MapVisualizer(city)
     nearest_road_searcher = NearestRoadSearcher()
