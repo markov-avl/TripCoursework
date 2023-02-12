@@ -1,6 +1,7 @@
 from geopy.distance import geodesic, Distance
 from sqlalchemy import Column, Integer
 from sqlalchemy.orm import relationship
+from sympy import Segment2D
 
 from .city import City
 from .coordinate import Coordinate
@@ -29,3 +30,6 @@ class Road(Entity):
     @property
     def center(self) -> tuple[float, float]:
         return (self.edge_0.longitude + self.edge_1.longitude) / 2, (self.edge_0.latitude + self.edge_1.latitude) / 2
+
+    def as_segment(self) -> Segment2D:
+        return Segment2D(self.edge_0.as_point(), self.edge_1.as_point())
