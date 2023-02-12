@@ -4,3 +4,4 @@ from .coordinate_service import CoordinateService
 from .place_service import PlaceService
 from .road_service import RoadService
 from .route_service import RouteService
+from .image_service import ImageService
