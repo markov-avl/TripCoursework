@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, Float
-from sympy import Point2D
 
 from .entity import Entity
 
@@ -9,5 +8,5 @@ class Coordinate(Entity):
     latitude: float = Column(Float, nullable=False)
     longitude: float = Column(Float, nullable=False)
 
-    def as_point(self) -> Point2D:
-        return Point2D(self.latitude, self.longitude)
+    def as_point(self) -> tuple[float, float]:
+        return self.latitude, self.longitude
