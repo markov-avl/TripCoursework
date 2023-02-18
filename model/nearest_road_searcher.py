@@ -10,12 +10,12 @@ class NearestRoadSearcher:
         roads = self._road_service.get_by_city(place.city)
         point = place.coordinate.as_point()
 
-        distances = {}
+        distances: dict[float, list[Road]] = {}
         for road in roads:
             segment = road.as_segment()
             current_distance = self._distance(point, segment)
             if current_distance not in distances:
-                distances[current_distance]: list[Road] = []
+                distances[current_distance] = []
             distances[current_distance].append(road)
 
         return distances[min(distances.keys())] if len(distances) > 1 else next(iter(distances.values()), [])
