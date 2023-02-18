@@ -12,20 +12,20 @@ class Road(Entity):
 
     id: int = Column(Integer, primary_key=True, autoincrement=True)
     city_id: int = Column(Integer, get_foreign_key(City), nullable=False)
-    edge_0_id: int = Column(Integer, get_foreign_key(Coordinate), nullable=False)
-    edge_1_id: int = Column(Integer, get_foreign_key(Coordinate), nullable=False)
+    point_0_id: int = Column(Integer, get_foreign_key(Coordinate), nullable=False)
+    point_1_id: int = Column(Integer, get_foreign_key(Coordinate), nullable=False)
 
     city: City = relationship(City, lazy=LAZY_MODE)
     # TODO: внешние ключи захардкодены
-    edge_0: Coordinate = relationship(Coordinate, lazy=LAZY_MODE, foreign_keys='Road.edge_0_id')
-    edge_1: Coordinate = relationship(Coordinate, lazy=LAZY_MODE, foreign_keys='Road.edge_1_id')
+    point_0: Coordinate = relationship(Coordinate, lazy=LAZY_MODE, foreign_keys='Road.point_0_id')
+    point_1: Coordinate = relationship(Coordinate, lazy=LAZY_MODE, foreign_keys='Road.point_1_id')
 
     @property
-    def distance(self) -> Distance:
-        coordinate_0 = self.edge_0.latitude, self.edge_0.longitude
-        coordinate_1 = self.edge_1.latitude, self.edge_1.longitude
+    def length(self) -> Distance:
+        coordinate_0 = self.point_0.latitude, self.point_0.longitude
+        coordinate_1 = self.point_1.latitude, self.point_1.longitude
         return geodesic(coordinate_0, coordinate_1)
 
     # noinspection PyTypeChecker
     def as_segment(self) -> tuple[float, float, float, float]:
-        return *self.edge_0.as_point(), *self.edge_1.as_point()
+        return *self.point_0.as_point(), *self.point_1.as_point()

@@ -5,7 +5,7 @@ from geopy.distance import geodesic
 from matplotlib import pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
-from entity import Road, Place, City
+from entity import Road, Place, City, Coordinate
 from service import RoadService, PlaceService
 
 
@@ -60,17 +60,17 @@ class MapVisualizer:
     @staticmethod
     def _print_roads(m: Basemap, roads: Sequence[Road], with_ids: bool = False, color: str = 'black') -> None:
         for road in roads:
-            x = (road.edge_0.longitude, road.edge_1.longitude)
-            y = (road.edge_0.latitude, road.edge_1.latitude)
+            x = road.point_0.longitude, road.point_1.longitude
+            y = road.point_0.latitude, road.point_1.latitude
             m.plot(x, y, latlon=True, color=color, linewidth=0.5)
         if with_ids:
-            edges = {}
+            points: dict[int, Coordinate] = {}
             for road in roads:
-                edges[road.edge_0.id] = road.edge_0
-                edges[road.edge_1.id] = road.edge_1
-            for edge in edges.values():
-                x, y = m(edge.longitude, edge.latitude)
-                plt.text(x, y, edge.id, fontsize=1, va='center', color='r')
+                points[road.point_0.id] = road.point_0
+                points[road.point_1.id] = road.point_1
+            for point in points.values():
+                x, y = m(point.longitude, point.latitude)
+                plt.text(x, y, point.id, fontsize=1, va='center', color='r')
 
     @staticmethod
     def _print_places(m: Basemap, places: Sequence[Place], with_ids: bool = False, color: str = 'red') -> None:
@@ -83,8 +83,8 @@ class MapVisualizer:
     @staticmethod
     def _get_latitudes(roads: Sequence[Road], places: Sequence[Place]) -> tuple[float, float, float]:
         latitudes = [
-            *[road.edge_0.latitude for road in roads],
-            *[road.edge_1.latitude for road in roads],
+            *[road.point_0.latitude for road in roads],
+            *[road.point_1.latitude for road in roads],
             *[place.coordinate.latitude for place in places]
         ]
         min_ = min(latitudes)
@@ -94,8 +94,8 @@ class MapVisualizer:
     @staticmethod
     def _get_longitudes(roads: Sequence[Road], places: Sequence[Place]) -> tuple[float, float, float]:
         longitudes = [
-            *[road.edge_0.longitude for road in roads],
-            *[road.edge_1.longitude for road in roads],
+            *[road.point_0.longitude for road in roads],
+            *[road.point_1.longitude for road in roads],
             *[place.coordinate.longitude for place in places]
         ]
         min_ = min(longitudes)
