@@ -62,10 +62,11 @@ def _nearest_roads(city_id: int):
 
 @blueprint.route('/<int:city_id>/shortest-path', methods=[Method.GET])
 def _test(city_id: int):
-    shortest_path_finder = ShortestPathFinder()
-
     city = city_service.get_by_id(city_id)
     roads = road_service.get_by_city(city)
+
+    shortest_path_finder = ShortestPathFinder()
+    map_visualizer = MapVisualizer(city)
 
     start_id = request.args.get('start_id', '')
     try:
@@ -83,11 +84,6 @@ def _test(city_id: int):
     destination = place_service.get_by_id(destination_id)
 
     shortest_path = shortest_path_finder.find(start, destination, roads)
+    image = map_visualizer.print_shortest_path(shortest_path)
 
-    return '<br>'.join([
-        f'Footpath distance: {shortest_path.footpath_distance}',
-        f'Highway distance: {shortest_path.highway_distance}',
-        f'Distance: {shortest_path.distance}',
-        f'Straight distance: {shortest_path.straight_distance}',
-        f'Points: {", ".join(map(lambda p: str(p.point), shortest_path.points))}'
-    ])
+    return Response(image.getvalue(), mimetype='image/png')
