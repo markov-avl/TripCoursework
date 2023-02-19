@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Relationship
 
 from .city import City
 from .coordinate import Coordinate
@@ -15,5 +15,5 @@ class Place(Entity):
     name: str = Column(String, nullable=False)
     address: str = Column(String, nullable=False)
 
-    city: City = relationship(City, lazy=LAZY_MODE)
-    coordinate: Coordinate = relationship(Coordinate, lazy=LAZY_MODE)
+    city: City | Relationship = relationship(City, lazy=LAZY_MODE)
+    coordinate: Coordinate | Relationship = relationship(Coordinate, lazy=LAZY_MODE)

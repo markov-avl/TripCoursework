@@ -22,9 +22,10 @@ class Repository(ABC):
         return result.scalar()
 
     @staticmethod
-    def _fetch_all(statement: Select) -> Sequence[Any]:
+    def _fetch_all(statement: Select, scalar: bool = True) -> Sequence[Any]:
         result = Repository._execute(statement)
-        return result.scalars().all()
+        # TODO: возможно всё же как-то по statement можно узнавать scalar
+        return result.scalars().all() if scalar else result.all()
 
     @staticmethod
     def save(*entities: Entity) -> None:

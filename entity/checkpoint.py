@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from sqlalchemy import Column, Integer, Interval, Float, Enum
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Relationship
 
 from .route import Route
 from .place import Place
@@ -19,5 +19,5 @@ class Checkpoint(Entity):
     money: float = Column(Float, nullable=False, default=0.0)
     priority: Priority = Column(Enum(Priority), nullable=False, default=Priority.LOWEST)
 
-    route: Route = relationship(Route, lazy=LAZY_MODE)
-    place: Place = relationship(Place, lazy=LAZY_MODE)
+    route: Route | Relationship = relationship(Route, lazy=LAZY_MODE)
+    place: Place | Relationship = relationship(Place, lazy=LAZY_MODE)
