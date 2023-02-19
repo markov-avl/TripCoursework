@@ -8,6 +8,8 @@ from mpl_toolkits.basemap import Basemap
 from entity import Road, Place, City, Coordinate
 from service import RoadService, PlaceService
 
+from .shortest_path import ShortestPath
+
 
 class MapVisualizer:
     def __init__(self, city: City):
@@ -56,6 +58,41 @@ class MapVisualizer:
         fig.savefig(image, dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
 
         return image
+
+    def print_shortest_path(self, shortest_path: ShortestPath) -> BytesIO:
+        roads = self._road_service.get_by_city(self._city)
+        places = [shortest_path.start, shortest_path.destination]
+
+        min_latitude, max_latitude, center_latitude = self._get_latitudes(roads, places)
+        min_longitude, max_longitude, center_longitude = self._get_longitudes(roads, places)
+        width, height = self._get_size(min_latitude, max_latitude, min_longitude, max_longitude)
+
+        fig, ax = plt.subplots(frameon=False)
+        m = Basemap(projection='gnom', lat_0=center_latitude, lon_0=center_longitude, width=width, height=height)
+
+        self._print_roads(m, roads, False)
+        self._print_places(m, places, False)
+        self._print_polygonal_chain(m, shortest_path.points, 'green')
+
+        rounding = 3
+        info = '\n'.join([
+            f'Footpath distance: {round(shortest_path.footpath_distance.km, rounding)} km',
+            f'Highway distance: {round(shortest_path.highway_distance.km, rounding)} km',
+            f'Distance: {round(shortest_path.distance.km, rounding)} km',
+            f'Straight distance: {round(shortest_path.straight_distance.km, rounding)} km'
+        ])
+        plt.text(0, 1.01, info, ha='left', va='bottom', fontsize=4, transform=ax.transAxes)
+
+        image = BytesIO()
+        fig.savefig(image, dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
+
+        return image
+
+    @staticmethod
+    def _print_polygonal_chain(m: Basemap, coordinates: Sequence[Coordinate], color: str = 'black') -> None:
+        x = [coordinate.longitude for coordinate in coordinates]
+        y = [coordinate.latitude for coordinate in coordinates]
+        m.plot(x, y, latlon=True, color=color, linewidth=0.5)
 
     @staticmethod
     def _print_roads(m: Basemap, roads: Sequence[Road], with_ids: bool = False, color: str = 'black') -> None:

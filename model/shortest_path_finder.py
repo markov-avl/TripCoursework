@@ -1,11 +1,11 @@
 from typing import Sequence
 
+from networkx import Graph, dijkstra_path
+
 from entity import Place, Road, Coordinate
 from service import CoordinateService, RoadService
 
 from .shortest_path import ShortestPath
-
-from networkx import Graph, dijkstra_path
 
 
 class ShortestPathFinder:
@@ -42,7 +42,7 @@ class ShortestPathFinder:
 
         points = dijkstra_path(graph, start_point, destination_point)
 
-        return ShortestPath(start.coordinate, destination.coordinate, points)
+        return ShortestPath(start, destination, points)
 
     def find_nearest_roads(self, place: Place, roads: Sequence[Road] = None) -> list[Road]:
         if not roads:

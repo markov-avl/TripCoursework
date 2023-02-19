@@ -1,20 +1,20 @@
 from geopy.distance import Distance
 
-from entity import Coordinate
+from entity import Place, Coordinate
 
 
 class ShortestPath:
-    def __init__(self, start: Coordinate, destination: Coordinate, roads: list[Coordinate]):
+    def __init__(self, start: Place, destination: Place, roads: list[Coordinate]):
         self._start = start
         self._destination = destination
         self._points = roads
 
     @property
-    def start(self) -> Coordinate:
+    def start(self) -> Place:
         return self._start
 
     @property
-    def destination(self) -> Coordinate:
+    def destination(self) -> Place:
         return self._destination
 
     @property
@@ -25,7 +25,8 @@ class ShortestPath:
     def footpath_distance(self) -> Distance:
         if not self._points:
             return self.straight_distance
-        return self._start.geo_distance(self._points[0]) + self._destination.geo_distance(self._points[-1])
+        return self._start.coordinate.geo_distance(self._points[0]) + \
+            self._destination.coordinate.geo_distance(self._points[-1])
 
     @property
     def highway_distance(self) -> Distance:
@@ -40,4 +41,4 @@ class ShortestPath:
 
     @property
     def straight_distance(self) -> Distance:
-        return self._start.geo_distance(self._destination)
+        return self._start.coordinate.geo_distance(self._destination.coordinate)
