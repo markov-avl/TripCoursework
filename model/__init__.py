@@ -1,2 +1,2 @@
 from .map_visualizer import MapVisualizer
-from .nearest_road_searcher import NearestRoadSearcher
+from .shortest_path_finder import ShortestPathFinder

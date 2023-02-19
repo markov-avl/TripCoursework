@@ -2,7 +2,7 @@ from typing import Sequence
 
 from flask import abort
 
-from entity import Coordinate
+from entity import Coordinate, City, Road
 from repository import CoordinateRepository
 
 
@@ -17,6 +17,9 @@ class CoordinateService:
         if coordinate := self._coordinate_repository.find_by_id(id_):
             return coordinate
         abort(404)
+
+    def get_by_city_with_adjacent_roads(self, city: City) -> Sequence[tuple[Coordinate, Road]]:
+        return self._coordinate_repository.find_by_city_joined_road_ordered_by_id(city)
 
     def create(self, latitude: float, longitude: float) -> Coordinate:
         coordinate = Coordinate(

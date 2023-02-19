@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Relationship
 
 from .city import City
 from .entity import Entity, get_foreign_key, LAZY_MODE
@@ -16,4 +16,4 @@ class Route(Entity):
     starts_at: datetime = Column(DateTime(timezone=True), nullable=False)
     ends_at: datetime = Column(DateTime(timezone=True), nullable=False)
 
-    city: City = relationship(City, lazy=LAZY_MODE)
+    city: City | Relationship = relationship(City, lazy=LAZY_MODE)
