@@ -16,7 +16,7 @@ class CityService:
     def get_by_id(self, id_: int) -> City:
         if city := self._city_repository.find_by_id(id_):
             return city
-        abort(404)
+        abort(404, 'City not found')
 
     def create(self, name: str) -> City:
         city = City(

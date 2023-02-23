@@ -16,4 +16,4 @@ class RouteService:
     def get_by_id(self, id_: int) -> Route:
         if route := self._route_repository.find_by_id(id_):
             return route
-        abort(404)
+        abort(404, 'Route not found')

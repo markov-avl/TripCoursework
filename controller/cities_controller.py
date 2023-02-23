@@ -43,15 +43,10 @@ def _roads(city_id: int):
 def _nearest_roads(city_id: int):
     city = city_service.get_by_id(city_id)
     map_visualizer = MapVisualizer(city)
-    shortest_path_finder = ShortestPathFinder()
+    shortest_path_finder = ShortestPathFinder(city)
 
     with_ids = request.args.get('ids', 'true') != 'false'
-    place_id = request.args.get('place_id', '')
-    try:
-        place_id = int(place_id)
-    except ValueError:
-        abort(400, 'place_id не введен или не является целым числом')
-
+    place_id = _parse_integer_param('place_id')
     place = place_service.get_by_id(place_id)
 
     nearest_roads = shortest_path_finder.find_nearest_roads(place)
@@ -61,29 +56,25 @@ def _nearest_roads(city_id: int):
 
 
 @blueprint.route('/<int:city_id>/shortest-path', methods=[Method.GET])
-def _test(city_id: int):
+def _shortest_path(city_id: int):
     city = city_service.get_by_id(city_id)
-    roads = road_service.get_by_city(city)
 
-    shortest_path_finder = ShortestPathFinder()
+    shortest_path_finder = ShortestPathFinder(city)
     map_visualizer = MapVisualizer(city)
 
-    start_id = request.args.get('start_id', '')
-    try:
-        start_id = int(start_id)
-    except ValueError:
-        abort(400, 'start_id не введен или не является целым числом')
-
-    destination_id = request.args.get('destination_id', '')
-    try:
-        destination_id = int(destination_id)
-    except ValueError:
-        abort(400, 'destination_id не введен или не является целым числом')
-
+    start_id = _parse_integer_param('start_id')
+    destination_id = _parse_integer_param('destination_id')
     start = place_service.get_by_id(start_id)
     destination = place_service.get_by_id(destination_id)
 
-    shortest_path = shortest_path_finder.find(start, destination, roads)
+    shortest_path = shortest_path_finder.find(start, destination)
     image = map_visualizer.print_shortest_path(shortest_path)
 
     return Response(image.getvalue(), mimetype='image/png')
+
+
+def _parse_integer_param(name: str) -> int:
+    try:
+        return int(request.args.get(name, ''))
+    except ValueError:
+        abort(400, f'Параметр {name} не введен или не является целым числом')

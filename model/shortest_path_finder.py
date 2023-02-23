@@ -2,31 +2,29 @@ from typing import Sequence
 
 from networkx import Graph, dijkstra_path
 
-from entity import Place, Road, Coordinate
+from entity import Place, Road, Coordinate, City
 from service import CoordinateService, RoadService
 
 from .shortest_path import ShortestPath
 
 
 class ShortestPathFinder:
-    def __init__(self):
+    def __init__(self, city: City):
+        self._city = city
         self._road_service = RoadService()
         self._coordinate_service = CoordinateService()
 
-    def find(self, start: Place, destination: Place, roads: Sequence[Road] = None) -> ShortestPath:
-        if start.city != destination.city:
-            raise ValueError('Places are in different cities')
-        city = start.city
+    def find(self, start: Place, destination: Place) -> ShortestPath:
+        if self._city != start.city or self._city != destination.city:
+            raise ValueError(f'Places are not in city of `{self._city.name}`')
 
-        if not roads:
-            roads = self._road_service.get_by_city(city)
-
+        roads = self._road_service.get_by_city(self._city)
         start_nearest_roads = self.find_nearest_roads(start, roads)
         destination_nearest_roads = self.find_nearest_roads(destination, roads)
         start_point = self._get_vertex(start.coordinate, start_nearest_roads)
         destination_point = self._get_vertex(destination.coordinate, destination_nearest_roads)
 
-        graph_roads = self._coordinate_service.get_by_city_with_adjacent_roads(city)
+        graph_roads = self._coordinate_service.get_by_city_with_adjacent_roads(self._city)
         graph = Graph()
 
         for coordinate, road in graph_roads:
@@ -42,7 +40,7 @@ class ShortestPathFinder:
 
         points = dijkstra_path(graph, start_point, destination_point)
 
-        return ShortestPath(start, destination, points)
+        return ShortestPath(start, destination, points if len(points) > 1 else [])
 
     def find_nearest_roads(self, place: Place, roads: Sequence[Road] = None) -> list[Road]:
         if not roads:
