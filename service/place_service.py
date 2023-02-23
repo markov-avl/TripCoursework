@@ -18,7 +18,7 @@ class PlaceService:
     def get_by_id(self, id_: int) -> Place:
         if place := self._place_repository.find_by_id(id_):
             return place
-        abort(404)
+        abort(404, 'Place not found')
 
     def get_by_city(self, city: City) -> Sequence[Place]:
         return self._place_repository.find_by_city(city)

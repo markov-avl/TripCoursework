@@ -72,7 +72,7 @@ class MapVisualizer:
 
         self._print_roads(m, roads, False)
         self._print_places(m, places, False)
-        self._print_polygonal_chain(m, shortest_path.points, 'green')
+        self._print_path(m, shortest_path.points, 'green')
 
         rounding = 3
         info = '\n'.join([
@@ -89,7 +89,7 @@ class MapVisualizer:
         return image
 
     @staticmethod
-    def _print_polygonal_chain(m: Basemap, coordinates: Sequence[Coordinate], color: str = 'black') -> None:
+    def _print_path(m: Basemap, coordinates: Sequence[Coordinate], color: str = 'black') -> None:
         x = [coordinate.longitude for coordinate in coordinates]
         y = [coordinate.latitude for coordinate in coordinates]
         m.plot(x, y, latlon=True, color=color, linewidth=0.5)
@@ -115,7 +115,7 @@ class MapVisualizer:
         plt.scatter(x, y, s=0.3, color='b')
         if with_ids:
             for i, place in enumerate(places):
-                plt.text(x[i], y[i], place.coordinate.id, fontsize=1, va='center', color=color)
+                plt.text(x[i], y[i], place.id, fontsize=1, va='center', color=color)
 
     @staticmethod
     def _get_latitudes(roads: Sequence[Road], places: Sequence[Place]) -> tuple[float, float, float]:

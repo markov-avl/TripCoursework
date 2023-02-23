@@ -18,7 +18,7 @@ class RoadService:
     def get_by_id(self, id_: int) -> Road:
         if road := self._road_repository.find_by_id(id_):
             return road
-        abort(404)
+        abort(404, 'Road not found')
 
     def get_by_city(self, city: City) -> Sequence[Road]:
         return self._road_repository.find_by_city(city)
