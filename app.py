@@ -4,7 +4,7 @@ import controller
 from basedir import basedir
 from database import database
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='template')
 app.register_blueprint(controller.index_blueprint)
 app.register_blueprint(controller.fixtures_blueprint)
 app.register_blueprint(controller.cities_blueprint)
