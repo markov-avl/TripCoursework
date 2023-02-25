@@ -31,8 +31,10 @@ def _roads(city_id: int):
     city = city_service.get_by_id(city_id)
     roads = road_service.get_by_city(city)
 
+    # print(roads[0].distance())
+
     return render_template(
-        'template.jinja2',
+        'roads_input.jinja2',
         city=city,
         roads=roads,
         map_path=image_service.get_city_roads(city)
