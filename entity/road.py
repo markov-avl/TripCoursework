@@ -24,7 +24,12 @@ class Road(Entity):
     def length(self) -> Distance:
         return geodesic(self.point_0.point, self.point_1.point)
 
-    # noinspection PyTypeChecker
+    @property
+    def center(self) -> tuple[float, float]:
+        longitude = (self.point_0.longitude + self.point_1.longitude) / 2
+        latitude = (self.point_0.latitude + self.point_1.latitude) / 2
+        return longitude, latitude
+
     @property
     def segment(self) -> tuple[float, float, float, float]:
         return *self.point_0.point, *self.point_1.point
@@ -36,11 +41,11 @@ class Road(Entity):
         return self.nearest_point(coordinate).geo_distance(coordinate)
 
     def nearest_point(self, point: Coordinate) -> Coordinate:
-        px = self.point_1.latitude - self.point_0.latitude
-        py = self.point_1.longitude - self.point_0.longitude
+        a = self.point_1.longitude - self.point_0.longitude
+        b = self.point_1.latitude - self.point_0.latitude
 
-        u = ((point.latitude - self.point_0.latitude) * px + (point.longitude - self.point_0.longitude) * py) \
-            / (px ** 2 + py ** 2)
+        u = (a * (point.longitude - self.point_0.longitude) + b * (point.latitude - self.point_0.latitude)) \
+            / (a ** 2 + b ** 2)
 
         if u > 1:
             u = 1
@@ -48,6 +53,6 @@ class Road(Entity):
             u = 0
 
         return Coordinate(
-            latitude=u * px + self.point_0.latitude,
-            longitude=u * py + self.point_0.longitude
+            longitude=u * a + self.point_0.longitude,
+            latitude=u * b + self.point_0.latitude
         )

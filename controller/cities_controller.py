@@ -21,7 +21,7 @@ def _map(city_id: int):
     with_places = request.args.get('places', 'true') != 'false'
     with_ids = request.args.get('ids', 'true') != 'false'
 
-    image = map_visualizer.print(with_roads, with_places, with_ids)
+    image = map_visualizer.print_map(with_roads, with_places, with_ids)
 
     return Response(image.getvalue(), mimetype='image/png')
 

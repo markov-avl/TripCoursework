@@ -17,6 +17,6 @@ class ImageService:
         image_name = f'city-{city.id}-roads.png'
         if not self._folder.joinpath(image_name).exists():
             map_visulizer = MapVisualizer(city)
-            image = map_visulizer.print(with_roads=True, with_places=False, with_ids=True)
+            image = map_visulizer.print_map(with_roads=True, with_places=False, with_ids=True)
             self._folder.joinpath(image_name).write_bytes(image.getbuffer().tobytes())
         return url_for('static', filename=f'image/{image_name}')
