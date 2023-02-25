@@ -1,6 +1,6 @@
 from typing import Any, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, or_
 
 from entity import Coordinate, City, Road
 from .repository import Repository
@@ -23,6 +23,15 @@ class CoordinateRepository(Repository):
         statement = (
             select(Coordinate, Road).
             join(Road, Road.point_0_id == Coordinate.id).
+            where(Road.city == city).
+            order_by(Coordinate.id)
+        )
+        return super()._fetch_all(statement, scalar=False)
+
+    def find_by_city_joined_road_with_repetitions_ordered_by_id(self, city: City) -> Sequence[tuple[Coordinate, Road]]:
+        statement = (
+            select(Coordinate, Road).
+            join(Road, or_(Road.point_0_id == Coordinate.id, Road.point_1_id == Coordinate.id)).
             where(Road.city == city).
             order_by(Coordinate.id)
         )

@@ -21,6 +21,9 @@ class CoordinateService:
     def get_by_city_with_adjacent_roads(self, city: City) -> Sequence[tuple[Coordinate, Road]]:
         return self._coordinate_repository.find_by_city_joined_road_ordered_by_id(city)
 
+    def get_by_city_with_adjacent_roads_with_repetitions(self, city: City) -> Sequence[tuple[Coordinate, Road]]:
+        return self._coordinate_repository.find_by_city_joined_road_with_repetitions_ordered_by_id(city)
+
     def create(self, latitude: float, longitude: float) -> Coordinate:
         coordinate = Coordinate(
             latitude=latitude,
