@@ -37,7 +37,7 @@ class MapVisualizer:
 
         fig, ax, m = self._get_plot(roads, places)
 
-        self._print_graph(ax, m)
+        self._print_roads(m, roads, with_ids)
         self._print_places(m, places, with_ids)
 
         fig.savefig(image, dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
@@ -89,6 +89,8 @@ class MapVisualizer:
         w, h = self._get_size(min_latitude, max_latitude, min_longitude, max_longitude)
 
         fig, ax = plt.subplots(frameon=False)
+        ax.axis('off')
+
         m = Basemap(projection=self._projection, lon_0=center_longitude, lat_0=center_latitude, width=w, height=h)
 
         return fig, ax, m

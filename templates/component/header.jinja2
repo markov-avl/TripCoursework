@@ -1,0 +1,14 @@
+{% macro header(active) %}
+    <header>
+        <nav class="flex w-full bg-blue-600">
+            <h2 class="p-3 font-semibold text-slate-900 text-white mr-5 ml-5">Tripper</h2>
+            {% for i, menu in enumerate(['Редактор знаний', 'Редактор данных', 'Редактор задач']) %}
+                {% if i == active %}
+                    <a href="#" class="p-3 hover:bg-blue-500 text-white font-bold">{{ menu }}</a>
+                {% else %}
+                    <a href="#" class="p-3 hover:bg-blue-500 text-white">{{ menu }}</a>
+                {% endif %}
+            {% endfor %}
+        </nav>
+    </header>
+{% endmacro %}
