@@ -1,0 +1,12 @@
+.basis-33-minus-1rem {
+    flex-basis: calc((100% / 3) - 1rem);
+}
+
+table {
+    text-align: center;
+}
+
+.magnifying-image {
+    max-width: 95vw;
+    max-height: 95vh;
+}

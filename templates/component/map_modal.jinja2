@@ -1,0 +1,15 @@
+{% macro map_modal(src) %}
+    <div id="map-modal" tabindex="-1" aria-hidden="true"
+         class="fixed hidden z-50 p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-modal">
+        <div class="relative w-auto max-h-screen">
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700 overflow-hidden">
+                <figure id="magnifying-area">
+                    <img class="magnifying-image p-4" id="magnifying-image" src="{{ src }}" alt="">
+                </figure>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="px-6 py-2 bg-blue-500 rounded-t-md text-white fixed left-10 bottom-0"
+            data-modal-target="map-modal" data-modal-toggle="map-modal">Открыть карту
+    </button>
+{% endmacro %}
