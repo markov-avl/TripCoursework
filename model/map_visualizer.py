@@ -23,7 +23,7 @@ class MapVisualizer:
         self._place_service = PlaceService()
         self._coordinate_service = CoordinateService()
         self._projection = 'gnom'
-        self._radius = 0.0004
+        self._radius = 0.0005
         self._line_weight = 0.2
 
     def print_map(self, with_roads: bool = True, with_places: bool = True, with_ids: bool = True) -> BytesIO:
@@ -37,7 +37,7 @@ class MapVisualizer:
 
         fig, ax, m = self._get_plot(roads, places)
 
-        self._print_roads(m, roads, with_ids)
+        self._print_graph(ax, m)
         self._print_places(m, places, with_ids)
 
         fig.savefig(image, dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
@@ -105,10 +105,11 @@ class MapVisualizer:
 
         for coordinate, grouped in groupby(graph, key=lambda g: g[0]):
             roads: list[Road] = [group[1] for group in grouped]
-            if len(roads) == 1:
-                self._print_one_way(ax, m, coordinate, roads[0])
-            else:
+            if len(roads) == 2:
                 self._print_cross_way(ax, m, coordinate, roads)
+            else:
+                for road in roads:
+                    self._print_one_way(ax, m, coordinate, road)
 
         m.plot([], [])
 
