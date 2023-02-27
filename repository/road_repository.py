@@ -1,6 +1,8 @@
 from typing import Any, Sequence
 
-from entity import Road, City
+from sqlalchemy import select, or_
+
+from entity import Road, City, Coordinate
 from .repository import Repository
 
 
@@ -18,4 +20,10 @@ class RoadRepository(Repository):
         return super().find_by_id(id_)
 
     def find_by_city(self, city: City) -> Sequence[Road]:
-        return self.find_by(Road.city == city)
+        statement = (
+            select(self._entity_type).distinct().
+            join(Coordinate, or_(Coordinate.id == Road.point_0_id, Coordinate.id == Road.point_1_id)).
+            where(Coordinate.city == city).
+            order_by(Coordinate.id)
+        )
+        return super()._fetch_all(statement)

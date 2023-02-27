@@ -23,12 +23,8 @@ class RoadService:
     def get_by_city(self, city: City) -> Sequence[Road]:
         return self._road_repository.find_by_city(city)
 
-    def create(self,
-               city: City,
-               point_0: Coordinate,
-               point_1: Coordinate) -> Road:
+    def create(self, point_0: Coordinate, point_1: Coordinate) -> Road:
         road = Road(
-            city_id=city.id,
             point_0_id=point_0.id,
             point_1_id=point_1.id
         )
@@ -37,10 +33,10 @@ class RoadService:
 
     def create_with_coordinates(self,
                                 city: City,
-                                point_0_latitude: float,
                                 point_0_longitude: float,
-                                point_1_latitude: float,
-                                point_1_longitude: float) -> Road:
-        point_0 = self._coordinate_service.create(point_0_latitude, point_0_longitude)
-        point_1 = self._coordinate_service.create(point_1_latitude, point_1_longitude)
-        return self.create(city, point_0, point_1)
+                                point_0_latitude: float,
+                                point_1_longitude: float,
+                                point_1_latitude: float) -> Road:
+        point_0 = self._coordinate_service.create(city, point_0_longitude, point_0_latitude)
+        point_1 = self._coordinate_service.create(city, point_1_longitude, point_1_latitude)
+        return self.create(point_0, point_1)

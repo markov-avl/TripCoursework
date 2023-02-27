@@ -15,10 +15,11 @@ class ShortestPathFinder:
         self._coordinate_service = CoordinateService()
 
     def find(self, start: Place, destination: Place) -> ShortestPath:
-        if self._city != start.city or self._city != destination.city:
+        if self._city != start.coordinate.city or self._city != destination.coordinate.city:
             raise ValueError(f'Places are not in city of `{self._city.name}`')
 
         roads = self._road_service.get_by_city(self._city)
+
         start_nearest_roads = self.find_nearest_roads(start, roads)
         destination_nearest_roads = self.find_nearest_roads(destination, roads)
         start_point = self._get_vertex(start.coordinate, start_nearest_roads)
@@ -44,7 +45,7 @@ class ShortestPathFinder:
 
     def find_nearest_roads(self, place: Place, roads: Sequence[Road] = None) -> list[Road]:
         if not roads:
-            roads = self._road_service.get_by_city(place.city)
+            roads = self._road_service.get_by_city(self._city)
 
         distances: dict[float, list[Road]] = {}
         for road in roads:

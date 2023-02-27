@@ -24,10 +24,11 @@ class CoordinateService:
     def get_by_city_with_adjacent_roads_with_repetitions(self, city: City) -> Sequence[tuple[Coordinate, Road]]:
         return self._coordinate_repository.find_by_city_joined_road_with_repetitions_ordered_by_id(city)
 
-    def create(self, latitude: float, longitude: float) -> Coordinate:
+    def create(self, city: City, longitude: float, latitude: float) -> Coordinate:
         coordinate = Coordinate(
-            latitude=latitude,
-            longitude=longitude
+            city_id=city.id,
+            longitude=longitude,
+            latitude=latitude
         )
         self._coordinate_repository.save(coordinate)
         return coordinate

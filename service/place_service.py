@@ -23,13 +23,8 @@ class PlaceService:
     def get_by_city(self, city: City) -> Sequence[Place]:
         return self._place_repository.find_by_city(city)
 
-    def create(self,
-               city: City,
-               coordinate: Coordinate,
-               name: str,
-               address: str) -> Place:
+    def create(self, coordinate: Coordinate, name: str, address: str) -> Place:
         place = Place(
-            city_id=city.id,
             coordinate_id=coordinate.id,
             name=name,
             address=address
@@ -37,11 +32,6 @@ class PlaceService:
         self._place_repository.save(place)
         return place
 
-    def create_with_coordinates(self,
-                                city: City,
-                                latitude: float,
-                                longitude: float,
-                                name: str,
-                                address: str) -> Place:
-        coordinate = self._coordinate_service.create(latitude, longitude)
-        return self.create(city, coordinate, name, address)
+    def create_with_coordinates(self, city: City, longitude: float, latitude: float, name: str, address: str) -> Place:
+        coordinate = self._coordinate_service.create(city, longitude, latitude)
+        return self.create(coordinate, name, address)
