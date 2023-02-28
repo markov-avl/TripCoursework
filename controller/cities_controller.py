@@ -21,7 +21,7 @@ def _map(city_id: int):
     with_places = request.args.get('places', 'true') != 'false'
     with_ids = request.args.get('ids', 'true') != 'false'
 
-    image = map_visualizer.print_map(with_roads, with_places, with_ids)
+    image = map_visualizer.print_map(with_roads, with_places, with_ids, with_ids)
 
     return Response(image.getvalue(), mimetype='image/png')
 
@@ -36,6 +36,19 @@ def _roads(city_id: int):
         city=city,
         roads=roads,
         map_path=image_service.get_city_roads(city)
+    )
+
+
+@blueprint.route('/<int:city_id>/places', methods=[Method.GET])
+def _places(city_id: int):
+    city = city_service.get_by_id(city_id)
+    places = place_service.get_by_city(city)
+
+    return render_template(
+        'city_places.jinja2',
+        city=city,
+        places=places,
+        map_path=image_service.get_city_places(city)
     )
 
 
