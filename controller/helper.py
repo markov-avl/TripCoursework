@@ -3,7 +3,6 @@ from typing import Type
 import flask
 from flask import flash
 from flask_wtf import FlaskForm
-from wtforms import Field
 
 translations = {
     'Not a valid integer value.': 'Поле должно быть целым числом'
@@ -27,7 +26,6 @@ def flash_warning(text: str) -> None:
 
 
 def flash_form_errors(form: FlaskForm) -> None:
-    for field_name, messages in form.errors.items():
-        field: Field = getattr(form, field_name)
+    for field, messages in form.errors.items():
         errors = '; '.join(translations.get(message, message).lower() for message in set(messages))
-        flash_warning(f'{field.label.text}: {errors}.')
+        flash_warning(f'{form[field].label.text}: {errors}.')

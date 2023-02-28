@@ -1,5 +1,5 @@
 from io import BytesIO
-from itertools import groupby
+from itertools import groupby, chain, product
 from typing import Sequence
 
 import numpy as np
@@ -25,22 +25,32 @@ class MapVisualizer:
         self._projection = 'gnom'
         self._radius = 0.0005
         self._line_weight = 0.2
+        self._id_params = dict(c='r', fontsize=1, ha='center', va='center')
+        self._vertex_params = dict(c='black', marker='D', s=2.2, linewidths=0, alpha=0.65)
+        self._image_params = dict(dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
 
-    def print_map(self, with_roads: bool = True, with_places: bool = True, with_ids: bool = True) -> BytesIO:
+    def print_map(self,
+                  with_roads: bool = True,
+                  with_places: bool = True,
+                  roads_ids: bool = True,
+                  places_ids: bool = True) -> BytesIO:
         image = BytesIO()
 
         roads = self._road_service.get_by_city(self._city) if with_roads else []
         places = self._place_service.get_by_city(self._city) if with_places else []
 
-        if not roads and not places:
-            return image
+        if roads or places:
+            fig, ax, m = self._get_plot(roads, places)
 
-        fig, ax, m = self._get_plot(roads, places)
+            self._print_graph(ax, m)
+            self._print_places(ax, m, places)
 
-        self._print_graph(ax, m)
-        self._print_places(m, places, with_ids)
+            if roads_ids:
+                self._plot_road_ids(ax, m, roads)
+            if places_ids:
+                self._plot_place_ids(ax, m, places)
 
-        fig.savefig(image, dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
+            fig.savefig(image, **self._image_params)
 
         return image
 
@@ -52,10 +62,10 @@ class MapVisualizer:
 
         self._print_roads(m, roads, with_ids)
         self._print_roads(m, nearest_roads, with_ids, 'green')
-        self._print_places(m, places, with_ids)
+        self._print_places(ax, m, places)
 
         image = BytesIO()
-        fig.savefig(image, dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
+        fig.savefig(image, **self._image_params)
 
         return image
 
@@ -66,7 +76,7 @@ class MapVisualizer:
         fig, ax, m = self._get_plot(roads, places)
 
         self._print_roads(m, roads, False)
-        self._print_places(m, places, False)
+        self._print_places(ax, m, places)
         self._print_path(m, shortest_path.points, 'green')
 
         rounding = 3
@@ -79,7 +89,7 @@ class MapVisualizer:
         plt.text(0, 1.01, info, ha='left', va='bottom', fontsize=4, transform=ax.transAxes)
 
         image = BytesIO()
-        fig.savefig(image, dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
+        fig.savefig(image, **self._image_params)
 
         return image
 
@@ -156,12 +166,29 @@ class MapVisualizer:
                 plt.text(x, y, point.id, fontsize=1, va='center', color='r')
 
     @staticmethod
-    def _print_places(m: Basemap, places: Sequence[Place], with_ids: bool = False, color: str = 'red') -> None:
+    def _print_places(ax: Axes, m: Basemap, places: Sequence[Place]) -> None:
         x, y = m([place.coordinate.longitude for place in places], [place.coordinate.latitude for place in places])
-        plt.scatter(x, y, s=0.3, color='b')
-        if with_ids:
-            for i, place in enumerate(places):
-                plt.text(x[i], y[i], place.id, fontsize=1, va='center', color=color)
+        ax.scatter(x, y, s=3, linewidths=0, color='b', alpha=0.65)
+
+    def _plot_road_ids(self, ax: Axes, m: Basemap, roads: Sequence[Road]) -> None:
+        vertices = set(chain.from_iterable((road.point_0, road.point_1) for road in roads))
+        self._plot_coordinate_ids(ax, m, vertices, self._vertex_params, 'w')
+
+    def _plot_place_ids(self, ax: Axes, m: Basemap, places: Sequence[Place]) -> None:
+        self._plot_coordinate_ids(ax, m, [place.coordinate for place in places], color='w')
+
+    def _plot_coordinate_ids(self,
+                             ax: Axes,
+                             m: Basemap,
+                             coordinates: Sequence[Coordinate],
+                             background: dict = None,
+                             color: str = 'r') -> None:
+        self._id_params['c'] = color
+        for coordinate in coordinates:
+            x, y = m(*coordinate.point)
+            if background:
+                ax.scatter(x, y, **background)
+            ax.text(x, y, coordinate.id, **self._id_params)
 
     @staticmethod
     def _get_latitudes(roads: Sequence[Road], places: Sequence[Place]) -> tuple[float, float, float]:
@@ -208,7 +235,7 @@ class MapVisualizer:
                   max_longitude: float) -> tuple[float, float]:
         width = MapVisualizer._get_width(min_latitude, max_latitude, min_longitude, max_longitude)
         height = MapVisualizer._get_height(min_longitude, max_longitude, min_latitude, max_latitude)
-        padding = width * 1.2 - width if width >= height else height * 1.2 - height
+        padding = width * 1.05 - width if width >= height else height * 1.05 - height
         return width + padding, height + padding
 
     @staticmethod
