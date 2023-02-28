@@ -1,12 +1,11 @@
-from flask import Blueprint, request, flash
+from flask import Blueprint
+from werkzeug.exceptions import HTTPException
 
-from .coordinate_form import CoordinateForm
 from controller.method import Method
 from service import CityService, CoordinateService
 
-from werkzeug.exceptions import HTTPException
-
-from .helper import redirect
+from .form import CoordinateForm
+from .helper import redirect, get_form, flash_message, flash_warning, flash_form_errors
 
 blueprint = Blueprint('coordinates', __name__, url_prefix='/coordinates')
 
@@ -16,18 +15,16 @@ coordinate_service = CoordinateService()
 
 @blueprint.route('/', methods=[Method.POST])
 def _create():
-    form = CoordinateForm(request.form) if request.form else CoordinateForm(data=request.json)
+    form: CoordinateForm = get_form(CoordinateForm)
 
     if form.validate_on_submit():
         try:
             city = city_service.get_by_id(form.city_id.data)
             coordinate = coordinate_service.create(city, form.longitude.data, form.latitude.data)
-            flash(f'Координата успешно создана ({coordinate.id})')
+            flash_message(f'Координата успешно создана ({coordinate.id})')
         except HTTPException as e:
-            flash(e.description, 'warning')
+            flash_warning(e.description)
     else:
-        for field, messages in form.errors.items():
-            message = '; '.join(m.lower() for m in messages)
-            flash(f'{getattr(form, field).label.text}: {message}.', 'warning')
+        flash_form_errors(form)
 
     return redirect()
