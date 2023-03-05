@@ -1,6 +1,6 @@
 from io import BytesIO
-from itertools import groupby, chain, product
-from typing import Sequence
+from itertools import groupby, chain
+from typing import Sequence, Iterable
 
 import numpy as np
 from geopy.distance import geodesic
@@ -24,60 +24,41 @@ class MapVisualizer:
         self._coordinate_service = CoordinateService()
         self._projection = 'gnom'
         self._radius = 0.0005
-        self._line_weight = 0.2
-        self._id_params = dict(c='r', fontsize=1, ha='center', va='center')
-        self._vertex_params = dict(c='black', marker='D', s=2.2, linewidths=0, alpha=0.65)
-        self._image_params = dict(dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
 
-    def print_map(self,
-                  with_roads: bool = True,
-                  with_places: bool = True,
-                  roads_ids: bool = True,
-                  places_ids: bool = True) -> BytesIO:
-        image = BytesIO()
-
+    def print_map(self, with_roads=True, with_places=True, with_ids=True) -> BytesIO:
         roads = self._road_service.get_by_city(self._city) if with_roads else []
         places = self._place_service.get_by_city(self._city) if with_places else []
+        figure, axis, basemap = self._get_plot(self._to_coordinates(places))
 
-        if roads or places:
-            fig, ax, m = self._get_plot(roads, places)
+        self._print_roads(axis, basemap, roads, segments=with_roads, points=with_ids, ids=with_ids)
+        self._print_places(axis, basemap, places, points=with_places, ids=with_ids)
 
-            self._print_graph(ax, m)
-            self._print_places(ax, m, places)
+        return self._get_image(figure)
 
-            if roads_ids:
-                self._plot_road_ids(ax, m, roads)
-            if places_ids:
-                self._plot_place_ids(ax, m, places)
+    def print_city_roads(self) -> BytesIO:
+        coordinates = self._coordinate_service.get_by_city_which_not_places(self._city)
+        figure, axis, basemap = self._get_plot(coordinates)
 
-            fig.savefig(image, **self._image_params)
+        background = dict(c='black', marker='D', s=3, linewidths=0, alpha=0.7)
+        foreground = dict(c='white', fontsize=1, va='center', ha='center')
+        self._print_coordinates(axis, basemap, coordinates, background, foreground)
 
-        return image
+        return self._get_image(figure)
 
-    def print_nearest_roads(self, place: Place, nearest_roads: Sequence[Road], with_ids: bool = True) -> BytesIO:
-        roads = self._road_service.get_by_city(self._city)
-        places = [place]
+    def print_city_places(self) -> BytesIO:
+        places = self._place_service.get_by_city(self._city)
+        figure, axis, basemap = self._get_plot(self._to_coordinates(places))
 
-        fig, ax, m = self._get_plot(roads, places)
+        self._print_places(axis, basemap, places, points=True, ids=True)
 
-        self._print_roads(m, roads, with_ids)
-        self._print_roads(m, nearest_roads, with_ids, 'green')
-        self._print_places(ax, m, places)
-
-        image = BytesIO()
-        fig.savefig(image, **self._image_params)
-
-        return image
+        return self._get_image(figure)
 
     def print_shortest_path(self, shortest_path: ShortestPath) -> BytesIO:
-        roads = self._road_service.get_by_city(self._city)
         places = [shortest_path.start, shortest_path.destination]
+        figure, axis, basemap = self._get_plot(self._to_coordinates(places))
 
-        fig, ax, m = self._get_plot(roads, places)
-
-        self._print_roads(m, roads, False)
-        self._print_places(ax, m, places)
-        self._print_path(m, shortest_path.points, 'green')
+        self._print_places(axis, basemap, places)
+        self._print_path(basemap, shortest_path.points, 'green')
 
         rounding = 3
         info = '\n'.join([
@@ -86,130 +67,149 @@ class MapVisualizer:
             f'Distance: {round(shortest_path.distance.km, rounding)} km',
             f'Straight distance: {round(shortest_path.straight_distance.km, rounding)} km'
         ])
-        plt.text(0, 1.01, info, ha='left', va='bottom', fontsize=4, transform=ax.transAxes)
+        plt.text(0, 1.01, info, ha='left', va='bottom', fontsize=4, transform=axis.transAxes)
 
+        return self._get_image(figure)
+
+    def _get_plot(self, coordinates: Iterable[Coordinate] = None) -> tuple[Figure, Axes, Basemap]:
+        graph = self._coordinate_service.get_by_city_with_adjacent_roads_with_repetitions(self._city)
+
+        longitudes: set[float] = {
+            *chain.from_iterable((c.longitude, r.point_0.longitude, r.point_1.longitude) for c, r in graph),
+            *([c.longitude for c in coordinates] if coordinates else [])
+        }
+        latitudes: set[float] = {
+            *chain.from_iterable((c.latitude, r.point_0.latitude, r.point_1.latitude) for c, r in graph),
+            *([c.latitude for c in coordinates] if coordinates else [])
+        }
+
+        min_lon, max_lon, center_lon = self._get_longitudes(longitudes)
+        min_lat, max_lat, center_lat = self._get_latitudes(latitudes)
+        w, h = self._get_size(min_lat, max_lat, min_lon, max_lon)
+
+        figure, axis = plt.subplots(frameon=False)
+        axis.axis('off')
+        basemap = Basemap(projection=self._projection, lon_0=center_lon, lat_0=center_lat, width=w, height=h)
+
+        self._print_graph(axis, basemap, graph)
+
+        return figure, axis, basemap
+
+    def _get_image(self, figure: Figure) -> BytesIO:
         image = BytesIO()
-        fig.savefig(image, **self._image_params)
-
+        params = dict(dpi=800.0, format='png', bbox_inches='tight', pad_inches=0)
+        figure.savefig(image, **params)
         return image
-
-    def _get_plot(self, roads: Sequence[Road], places: Sequence[Place]) -> tuple[Figure, Axes, Basemap]:
-        min_longitude, max_longitude, center_longitude = self._get_longitudes(roads, places)
-        min_latitude, max_latitude, center_latitude = self._get_latitudes(roads, places)
-        w, h = self._get_size(min_latitude, max_latitude, min_longitude, max_longitude)
-
-        fig, ax = plt.subplots(frameon=False)
-        ax.axis('off')
-
-        m = Basemap(projection=self._projection, lon_0=center_longitude, lat_0=center_latitude, width=w, height=h)
-
-        return fig, ax, m
 
     def _print_path(self, m: Basemap, coordinates: Sequence[Coordinate], color: str = 'black') -> None:
         x = [coordinate.longitude for coordinate in coordinates]
         y = [coordinate.latitude for coordinate in coordinates]
-        m.plot(x, y, latlon=True, color=color, linewidth=self._line_weight)
+        m.plot(x, y, latlon=True, color=color, linewidth=0.2)
 
-    def _print_graph(self, ax: Axes, m: Basemap) -> None:
-        graph = self._coordinate_service.get_by_city_with_adjacent_roads_with_repetitions(self._city)
-
+    def _print_graph(self, axis: Axes, basemap: Basemap, graph: Sequence[tuple[Coordinate, Road]]) -> None:
         for coordinate, grouped in groupby(graph, key=lambda g: g[0]):
             roads: list[Road] = [group[1] for group in grouped]
             if len(roads) == 2:
-                self._print_cross_way(ax, m, coordinate, roads)
+                self._print_cross_way(axis, basemap, coordinate, roads)
             else:
                 for road in roads:
-                    self._print_one_way(ax, m, coordinate, road)
+                    self._print_one_way(axis, basemap, coordinate, road)
+        basemap.plot([], [])
 
-        m.plot([], [])
-
-    def _print_one_way(self, ax: Axes, m: Basemap, coordinate: Coordinate, road: Road) -> None:
-        vertices = [m(*road.center), m(*coordinate.point)]
+    def _print_one_way(self, axis: Axes, basemap: Basemap, coordinate: Coordinate, road: Road) -> None:
+        vertices = [basemap(*road.center), basemap(*coordinate.point)]
         codes = [path.Path.MOVETO, path.Path.LINETO]
-        rounded_verts = patches.PathPatch(path.Path(vertices, codes), fill=False, lw=self._line_weight)
-        ax.add_patch(rounded_verts)
+        rounded_verts = patches.PathPatch(path.Path(vertices, codes), fill=False, lw=0.2)
+        axis.add_patch(rounded_verts)
 
-    def _print_cross_way(self, ax: Axes, m: Basemap, coordinate: Coordinate, roads: list[Road]) -> None:
+    def _print_cross_way(self, axis: Axes, basemap: Basemap, coordinate: Coordinate, roads: list[Road]) -> None:
         roads = roads.copy()
 
         while len(roads) > 1:
             for i in range(1, len(roads)):
-                vertices = [m(*roads[0].center), m(*coordinate.point), m(*roads[i].center)]
+                vertices = [basemap(*roads[0].center), basemap(*coordinate.point), basemap(*roads[i].center)]
                 codes = [path.Path.MOVETO, path.Path.CURVE3, path.Path.CURVE3]
 
                 segment = *roads[0].center, *coordinate.point
                 if intersections := self._segment_circle_intersection(segment, coordinate.point, self._radius):
-                    vertices.insert(1, m(*intersections[0]))
+                    vertices.insert(1, basemap(*intersections[0]))
                     codes.insert(1, path.Path.LINETO)
 
                 segment = *roads[i].center, *coordinate.point
                 if intersections := self._segment_circle_intersection(segment, coordinate.point, self._radius):
-                    vertices.insert(-1, m(*intersections[0]))
+                    vertices.insert(-1, basemap(*intersections[0]))
                     codes.append(path.Path.LINETO)
 
-                rounded_vertices = patches.PathPatch(path.Path(vertices, codes), fill=False, lw=self._line_weight)
-                ax.add_patch(rounded_vertices)
+                rounded_vertices = patches.PathPatch(path.Path(vertices, codes), fill=False, lw=0.2)
+                axis.add_patch(rounded_vertices)
             roads.pop(0)
 
-    def _print_roads(self, m: Basemap, roads: Sequence[Road], with_ids: bool = False, color: str = 'black') -> None:
-        for road in roads:
-            x = road.point_0.longitude, road.point_1.longitude
-            y = road.point_0.latitude, road.point_1.latitude
-            m.plot(x, y, latlon=True, color=color, linewidth=self._line_weight)
-        if with_ids:
-            points: dict[int, Coordinate] = {}
+    def _print_roads(self,
+                     axis: Axes,
+                     basemap: Basemap,
+                     roads: Iterable[Road],
+                     segments=True,
+                     points=True,
+                     ids=False) -> None:
+        if segments:
+            params = dict(c='black', linewidth=0.2)
             for road in roads:
-                points[road.point_0.id] = road.point_0
-                points[road.point_1.id] = road.point_1
-            for point in points.values():
-                x, y = m(*point.point)
-                plt.text(x, y, point.id, fontsize=1, va='center', color='r')
+                x = road.point_0.longitude, road.point_1.longitude
+                y = road.point_0.latitude, road.point_1.latitude
+                basemap.plot(x, y, latlon=True, **params)
+        if points or ids:
+            coordinates = self._to_coordinates(roads)
+            background = dict(c='black', marker='D', s=3, linewidths=0, alpha=0.7) if points else None
+            foreground = dict(c='red', fontsize=1, va='center', ha='center') if ids else None
+            if background and ids:
+                foreground['c'] = 'white'
+            self._print_coordinates(axis, basemap, coordinates, background, foreground)
 
-    @staticmethod
-    def _print_places(ax: Axes, m: Basemap, places: Sequence[Place]) -> None:
-        x, y = m([place.coordinate.longitude for place in places], [place.coordinate.latitude for place in places])
-        ax.scatter(x, y, s=3, linewidths=0, color='b', alpha=0.65)
+    def _print_places(self, axis: Axes, basemap: Basemap, places: Iterable[Place], points=True, ids=False) -> None:
+        if points or ids:
+            coordinates = self._to_coordinates(places)
+            background = dict(c='blue', marker='.', s=15, linewidths=0, alpha=0.7) if points else None
+            foreground = dict(c='red', fontsize=1, va='center', ha='center') if ids else None
+            if background and ids:
+                foreground['c'] = 'white'
+            self._print_coordinates(axis, basemap, coordinates, background, foreground)
 
-    def _plot_road_ids(self, ax: Axes, m: Basemap, roads: Sequence[Road]) -> None:
-        vertices = set(chain.from_iterable((road.point_0, road.point_1) for road in roads))
-        self._plot_coordinate_ids(ax, m, vertices, self._vertex_params, 'w')
-
-    def _plot_place_ids(self, ax: Axes, m: Basemap, places: Sequence[Place]) -> None:
-        self._plot_coordinate_ids(ax, m, [place.coordinate for place in places], color='w')
-
-    def _plot_coordinate_ids(self,
-                             ax: Axes,
-                             m: Basemap,
-                             coordinates: Sequence[Coordinate],
-                             background: dict = None,
-                             color: str = 'r') -> None:
-        self._id_params['c'] = color
-        for coordinate in coordinates:
-            x, y = m(*coordinate.point)
+    def _print_coordinates(self,
+                           axis: Axes,
+                           basemap: Basemap,
+                           coordinates: Iterable[Coordinate],
+                           background: dict = None,
+                           foreground: dict = None) -> None:
+        for coordinate in coordinates if background or foreground else []:
+            x, y = basemap(*coordinate.point)
             if background:
-                ax.scatter(x, y, **background)
-            ax.text(x, y, coordinate.id, **self._id_params)
+                axis.scatter(x, y, **background)
+            if foreground:
+                axis.text(x, y, str(coordinate.id), **foreground)
 
     @staticmethod
-    def _get_latitudes(roads: Sequence[Road], places: Sequence[Place]) -> tuple[float, float, float]:
-        latitudes = [
-            *[road.point_0.latitude for road in roads],
-            *[road.point_1.latitude for road in roads],
-            *[place.coordinate.latitude for place in places]
-        ]
-        min_ = min(latitudes)
-        max_ = max(latitudes)
+    def _to_coordinates(entities: Iterable[Road | Place]) -> set[Coordinate]:
+        return set(chain.from_iterable((e.point_0, e.point_1)
+                                       if isinstance(e, Road) else (e.coordinate,) for e in entities))
+
+    @staticmethod
+    def _to_longitudes(coordinates: Iterable[Coordinate]) -> list[float]:
+        return [c.longitude for c in coordinates]
+
+    @staticmethod
+    def _to_latitudes(coordinates: Iterable[Coordinate]) -> list[float]:
+        return [c.latitude for c in coordinates]
+
+    @staticmethod
+    def _get_longitudes(longitudes: Iterable[float]) -> tuple[float, float, float]:
+        min_ = min(longitudes)
+        max_ = max(longitudes)
         return min_, max_, (min_ + max_) / 2
 
     @staticmethod
-    def _get_longitudes(roads: Sequence[Road], places: Sequence[Place]) -> tuple[float, float, float]:
-        longitudes = [
-            *[road.point_0.longitude for road in roads],
-            *[road.point_1.longitude for road in roads],
-            *[place.coordinate.longitude for place in places]
-        ]
-        min_ = min(longitudes)
-        max_ = max(longitudes)
+    def _get_latitudes(latitudes: Iterable[float]) -> tuple[float, float, float]:
+        min_ = min(latitudes)
+        max_ = max(latitudes)
         return min_, max_, (min_ + max_) / 2
 
     @staticmethod

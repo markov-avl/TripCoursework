@@ -4,7 +4,7 @@ from flask import abort
 
 from entity import Road, City, Coordinate
 from repository import RoadRepository
-from service import CoordinateService
+from .coordinate_service import CoordinateService
 
 
 class RoadService:

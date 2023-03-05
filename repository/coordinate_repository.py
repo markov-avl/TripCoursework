@@ -1,8 +1,8 @@
 from typing import Any, Sequence
 
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 
-from entity import Coordinate, City, Road
+from entity import Coordinate, City, Road, Place
 from .repository import Repository
 
 
@@ -18,6 +18,14 @@ class CoordinateRepository(Repository):
 
     def find_by_id(self, id_: int) -> Coordinate | None:
         return super().find_by_id(id_)
+
+    def find_by_city_left_joined_place_where_place_coordinate_is_null(self, city: City) -> Sequence[Coordinate]:
+        statement = (
+            select(self._entity_type).
+            join(Place, Place.coordinate_id == Coordinate.id, isouter=True).
+            where(and_(Coordinate.city == city, Place.coordinate == None))
+        )
+        return super()._fetch_all(statement)
 
     def find_by_city_joined_road_ordered_by_id(self, city: City) -> Sequence[tuple[Coordinate, Road]]:
         statement = (

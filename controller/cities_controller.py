@@ -17,11 +17,11 @@ def _map(city_id: int):
     city = city_service.get_by_id(city_id)
     map_visualizer = MapVisualizer(city)
 
-    with_roads = request.args.get('roads', 'true') != 'false'
-    with_places = request.args.get('places', 'true') != 'false'
-    with_ids = request.args.get('ids', 'true') != 'false'
+    with_roads = _parse_boolean_param('roads')
+    with_places = _parse_boolean_param('places')
+    with_ids = _parse_boolean_param('ids')
 
-    image = map_visualizer.print_map(with_roads, with_places, with_ids, with_ids)
+    image = map_visualizer.print_map(with_roads, with_places, with_ids)
 
     return Response(image.getvalue(), mimetype='image/png')
 
@@ -52,22 +52,6 @@ def _places(city_id: int):
     )
 
 
-@blueprint.route('/<int:city_id>/nearest-roads', methods=[Method.GET])
-def _nearest_roads(city_id: int):
-    city = city_service.get_by_id(city_id)
-    map_visualizer = MapVisualizer(city)
-    shortest_path_finder = ShortestPathFinder(city)
-
-    with_ids = request.args.get('ids', 'true') != 'false'
-    place_id = _parse_integer_param('place_id')
-    place = place_service.get_by_id(place_id)
-
-    nearest_roads = shortest_path_finder.find_nearest_roads(place)
-    image = map_visualizer.print_nearest_roads(place, nearest_roads, with_ids)
-
-    return Response(image.getvalue(), mimetype='image/png')
-
-
 @blueprint.route('/<int:city_id>/shortest-path', methods=[Method.GET])
 def _shortest_path(city_id: int):
     city = city_service.get_by_id(city_id)
@@ -91,3 +75,7 @@ def _parse_integer_param(name: str) -> int:
         return int(request.args.get(name, ''))
     except ValueError:
         abort(400, f'Параметр {name} не введен или не является целым числом')
+
+
+def _parse_boolean_param(name: str) -> bool:
+    return request.args.get(name, 'true') != 'false'
