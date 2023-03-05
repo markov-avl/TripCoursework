@@ -4,7 +4,7 @@ from flask import abort
 
 from entity import Place, City, Coordinate
 from repository import PlaceRepository
-from service import CoordinateService
+from .coordinate_service import CoordinateService
 
 
 class PlaceService:
@@ -18,7 +18,7 @@ class PlaceService:
     def get_by_id(self, id_: int) -> Place:
         if place := self._place_repository.find_by_id(id_):
             return place
-        abort(404, 'Place not found')
+        abort(404, 'Место не найдено')
 
     def get_by_city(self, city: City) -> Sequence[Place]:
         return self._place_repository.find_by_city(city)

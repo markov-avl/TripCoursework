@@ -16,7 +16,10 @@ class CoordinateService:
     def get_by_id(self, id_: int) -> Coordinate:
         if coordinate := self._coordinate_repository.find_by_id(id_):
             return coordinate
-        abort(404, 'Coordinate not found')
+        abort(404, 'Координата не найдена')
+
+    def get_by_city_which_not_places(self, city: City) -> Sequence[Coordinate]:
+        return self._coordinate_repository.find_by_city_left_joined_place_where_place_coordinate_is_null(city)
 
     def get_by_city_with_adjacent_roads(self, city: City) -> Sequence[tuple[Coordinate, Road]]:
         return self._coordinate_repository.find_by_city_joined_road_ordered_by_id(city)

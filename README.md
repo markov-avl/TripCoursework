@@ -17,21 +17,16 @@ GET http://{host:port}/fixtures/load
 
 ## Города
 
+Просмотр карты города:
+
 ```
-# Просмотр карты города:
-GET http://{host:port}/cities/{city_id}/map?places=true&roads=true&ids=true
+GET http://{host:port}/cities/{city_id}/map?roads=true&places=true&ids=true
 
 # По умолчанию все параметры выставлены как true
 ```
 
-```
-# Просмотр ближайших дорог:
-GET http://{host:port}/cities/{city_id}/nearest-roads?place_id={place_id}&ids=true
-
-# По умолчанию параметр ids выставлен как true
-```
+Просмотр кратчайшего пути между местами:
 
 ```
-# Просмотр кратчайшего пути между местами:
 GET http://{host:port}/cities/{city_id}/shortest-path?start_id={start_id}&destination_id={destination_id}
 ```
