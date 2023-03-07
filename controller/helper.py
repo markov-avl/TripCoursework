@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Any
 
 import flask
 from flask import flash
@@ -13,7 +13,7 @@ def redirect() -> flask.Response:
     return flask.redirect(flask.request.values.get('redirect', flask.url_for('index.index')))
 
 
-def get_form(form_type: Type[FlaskForm]) -> FlaskForm:
+def get_form(form_type: Type[FlaskForm]) -> FlaskForm | Any:
     return form_type(flask.request.form) if flask.request.form else form_type(data=flask.request.json)
 
 

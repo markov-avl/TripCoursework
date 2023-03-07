@@ -8,8 +8,7 @@ const getDataById = (id) => ({
 const editRoadData = async (e) => {
     const id = getRoadId(e)
     const data = getDataById(id)
-    debugger
-    let response = await fetch('/roads/' + id, {
+    await fetch('/roads/' + id, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
@@ -21,8 +20,7 @@ const editRoadData = async (e) => {
 
 const deleteRoad = async (e) => {
     const id = getRoadId(e)
-    debugger
-    let response = await fetch('/roads/' + id, {
+    await fetch('/roads/' + id, {
         method: 'DELETE'
     })
     window.location.reload()
