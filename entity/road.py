@@ -2,7 +2,6 @@ from geopy.distance import geodesic, Distance
 from sqlalchemy import Column, Integer
 from sqlalchemy.orm import relationship, Relationship
 
-from .city import City
 from .coordinate import Coordinate
 from .entity import Entity, get_foreign_key, LAZY_MODE
 

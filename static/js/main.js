@@ -1,23 +1,30 @@
-const fetchPost = async (e) => {
-    const idNumber = e.id.split('-').at(-1)
-    const roadStartIdElement = document.getElementById('road-start-' + idNumber)
-    const roadEndIdElement = document.getElementById('road-end-' + idNumber)
+const getRoadId = (e) => e.id.split('-').at(-1)
 
-    const road = {
-        id: +idNumber,
-        point_0_id: +roadStartIdElement.innerText,
-        point_1_id: +roadEndIdElement.innerText
-    }
+const getDataById = (id) => ({
+    point_0_id: +document.getElementById('road-start-point-id-' + id).innerText,
+    point_1_id: +document.getElementById('road-end-point-id-' + id).innerText
+})
 
-    let response = await fetch('url', {
-        method: 'POST',
+const editRoadData = async (e) => {
+    const id = getRoadId(e)
+    const data = getDataById(id)
+    debugger
+    let response = await fetch('/roads/' + id, {
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
         },
-        body: JSON.stringify(road)
+        body: JSON.stringify(data)
     })
+    window.location.reload()
+}
 
-    let result = await response.json()
+const deleteRoad = async (e) => {
+    const id = getRoadId(e)
+    debugger
+    let response = await fetch('/roads/' + id, {
+        method: 'DELETE'
+    })
     window.location.reload()
 }
 
