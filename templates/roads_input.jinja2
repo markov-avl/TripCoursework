@@ -10,49 +10,88 @@
     {{ header(0) }}
 
     <div class="flex">
-        <div class="p-10 box-border w-full">
-            <form action="" class="flex flex-wrap gap-4">
+        <div class="px-10 py-5 box-border w-full">
+            <h1 class="font-semibold text-2xl mb-3">Редактор дорог</h1>
+            <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
+                  method="POST"
+                  class="flex flex-wrap gap-2">
                 <h2 class="basis-full">Создание точки</h2>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
-                       type="number" placeholder="Широта">
+                       type="number"
+                       step="0.00001"
+                       placeholder="Широта"
+                       name="latitude">
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
-                       type="number" placeholder="Долгота">
-                <button type="submit" class="px-6 py-2 bg-green-500 rounded-md text-white">Создать точку</button>
+                       type="number"
+                       step="0.00001"
+                       placeholder="Долгота"
+                       name="longitude">
+                <input hidden name="city_id" value="{{ city.id }}">
+                <button type="submit"
+                        class="px-6 py-2 bg-green-500 rounded-md text-white">Создать точку
+                </button>
             </form>
-            <form action="" class="flex flex-wrap gap-4 mt-4">
+            <form action="{{ url_for('roads._create', redirect=request.path) }}"
+                  method="POST"
+                  class="flex flex-wrap gap-2 mt-4">
                 <h2 class="basis-full">Создание дороги</h2>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
-                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
-                              grow shrink basis-33-minus-1rem"
-                       type="number" placeholder="ID точки начала дороги">
+                  text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                  grow shrink basis-33-minus-1rem"
+                       type="number"
+                       placeholder="ID точки начала дороги"
+                       name="point_0_id">
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-1/3 text-sm
-                              leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200
-                              shadow-sm grow shrink basis-33-minus-1rem"
-                       type="number" placeholder="ID точки конца дороги">
-                <button type="submit" class="px-6 py-2 bg-green-500 rounded-md text-white">Создать дорогу</button>
+                  leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200
+                  shadow-sm grow shrink basis-33-minus-1rem"
+                       type="number"
+                       placeholder="ID точки конца дороги"
+                       name="point_1_id">
+                <input hidden name="city_id" value="{{ city.id }}">
+                <button type="submit"
+                        class="px-6 py-2 bg-green-500 rounded-md text-white">Создать дорогу
+                </button>
             </form>
             <div>
                 <table class="mt-4 w-full border-collapse">
-                    <caption class="text-xl font-medium p-4">Дороги</caption>
+                    <caption class="text-xl font-medium p-2" style="text-align: left">Таблица "Дороги"</caption>
                     <tr class="border-b">
-                        <th>№</th>
-                        <th>ID точки начала дороги</th>
-                        <th>ID точки конца дороги</th>
-                        <th></th>
+                        <th class="border-r">ID</th>
+                        <th colspan="3" class="border-r">Точка начала дороги (ID, Широта, Долгота)</th>
+                        <th colspan="3" class="border-r">Точка конца дороги (ID, Широта, Долгота)</th>
+                        <th class="w-1/5"></th>
                     </tr>
                     {% for road in roads %}
-                        <tr class="border-b py-4">
-                            <td id="number-{{ road.id }}">{{ road.id }}</td>
-                            <td contenteditable="true" id="road-start-{{ road.id }}">{{ road.point_0_id }}</td>
-                            <td contenteditable="true" id="road-end-{{ road.id }}">{{ road.point_1_id }}</td>
+                        <tr class="py-4">
+                            <td {#contenteditable="true"#}
+                                    class="border-r"
+                                    id="road-id-{{ road.id }}">{{ road.id }}</td>
+                            <td contenteditable="true"
+                                id="road-start-point-id-{{ road.id }}">{{ road.point_0_id }}</td>
+                            <td {#contenteditable="true"#}
+                                    id="road-start-point-latitude-{{ road.id }}">{{ road.point_0.latitude }}</td>
+                            <td {#contenteditable="true"#}
+                                    class="border-r"
+                                    id="road-start-point-longitude-{{ road.id }}">{{ road.point_0.longitude }}</td>
+                            <td contenteditable="true"
+                                id="road-end-point-id-{{ road.id }}">{{ road.point_1_id }}</td>
+                            <td {#contenteditable="true"#}
+                                    id="road-end-point-latitude-{{ road.id }}">{{ road.point_1.latitude }}</td>
+                            <td {#contenteditable="true"#}
+                                    class="border-r"
+                                    id="road-end-point-longitude-{{ road.id }}">{{ road.point_1.longitude }}</td>
                             <td>
-                                <button id="btn-{{ road.id }}"
+                                <button id="edit-btn-{{ road.id }}"
                                         class="px-6 py-2 bg-yellow-500 rounded-md text-white"
-                                        onclick="fetchPost(this)">Редактировать
+                                        onclick="editRoadData(this)">Редактировать
+                                </button>
+                                <button id="delete-btn-{{ road.id }}"
+                                        class="px-6 py-2 bg-red-500 rounded-md text-white"
+                                        onclick="deleteRoad(this)">X
                                 </button>
                             </td>
                         </tr>
