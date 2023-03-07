@@ -31,6 +31,13 @@ class RoadService:
         self._road_repository.save(road)
         return road
 
+    def update(self, road: Road) -> Road:
+        self._road_repository.save(road)
+        return road
+
+    def delete(self, road: Road) -> None:
+        self._road_repository.delete(road)
+
     def create_with_coordinates(self,
                                 city: City,
                                 point_0_longitude: float,

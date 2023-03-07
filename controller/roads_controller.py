@@ -32,3 +32,38 @@ def _create():
         flash_form_errors(form)
 
     return redirect()
+
+
+@blueprint.route('/<int:road_id>', methods=[Method.PUT])
+def _update(road_id: int):
+    form: RoadForm = get_form(RoadForm)
+
+    if form.validate_on_submit():
+        try:
+            road = road_service.get_by_id(road_id)
+            road.point_0 = coordinate_service.get_by_id(form.point_0_id.data)
+            road.point_1 = coordinate_service.get_by_id(form.point_1_id.data)
+            road_service.update(road)
+            flash_message(f'Дорога успешно изменена ({road.id})')
+            for city in {road.point_0.city, road.point_1.city}:
+                image_service.render_city_roads(city)
+        except HTTPException as e:
+            flash_warning(e.description)
+    else:
+        flash_form_errors(form)
+
+    return redirect()
+
+
+@blueprint.route('/<int:road_id>', methods=[Method.DELETE])
+def _delete(road_id: int):
+    try:
+        road = road_service.get_by_id(road_id)
+        road_service.delete(road)
+        flash_message(f'Дорога успешно удалена ({road.id})')
+        for city in {road.point_0.city, road.point_1.city}:
+            image_service.render_city_roads(city)
+    except HTTPException as e:
+        flash_warning(e.description)
+
+    return redirect()
