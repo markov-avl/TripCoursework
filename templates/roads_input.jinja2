@@ -1,6 +1,7 @@
 {% extends 'base.jinja2' %}
-{% from 'component/header.jinja2' import header %}
-{% from 'component/map_modal.jinja2' import map_modal %}
+{% from 'macro/header.jinja2' import header %}
+{% from 'macro/map_modal.jinja2' import map_modal %}
+{% from 'macro/flash_messages.jinja2' import flash_messages %}
 
 {% block title %}
     Редактор дорог
@@ -11,6 +12,8 @@
 
     <div class="flex">
         <div class="px-10 py-5 box-border w-full">
+            {{ flash_messages() }}
+
             <h1 class="font-semibold text-2xl mb-3">Редактор дорог</h1>
             <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
                   method="POST"

@@ -18,11 +18,11 @@ def get_form(form_type: Type[FlaskForm]) -> FlaskForm | Any:
 
 
 def flash_message(text: str) -> None:
-    flash(text, 'message')
+    flash(text, 'green')
 
 
 def flash_warning(text: str) -> None:
-    flash(text, 'warning')
+    flash(text, 'yellow')
 
 
 def flash_form_errors(form: FlaskForm) -> None:
