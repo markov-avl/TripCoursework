@@ -12,6 +12,16 @@ road_service = RoadService()
 image_service = ImageService()
 
 
+@blueprint.route('/', methods=[Method.GET])
+def _index():
+    cities = sorted(city_service.get_all(), key=lambda c: c.name)
+
+    return render_template(
+        'cities.jinja2',
+        cities=cities
+    )
+
+
 @blueprint.route('/<int:city_id>/map', methods=[Method.GET])
 def _map(city_id: int):
     city = city_service.get_by_id(city_id)
@@ -29,7 +39,7 @@ def _map(city_id: int):
 @blueprint.route('/<int:city_id>/roads', methods=[Method.GET])
 def _roads(city_id: int):
     city = city_service.get_by_id(city_id)
-    roads = road_service.get_by_city(city)
+    roads = sorted(road_service.get_by_city(city), key=lambda r: r.point_0.id)
 
     return render_template(
         'roads_input.jinja2',
@@ -42,7 +52,7 @@ def _roads(city_id: int):
 @blueprint.route('/<int:city_id>/places', methods=[Method.GET])
 def _places(city_id: int):
     city = city_service.get_by_id(city_id)
-    places = place_service.get_by_city(city)
+    places = sorted(place_service.get_by_city(city), key=lambda p: p.coordinate.id)
 
     return render_template(
         'city_places.jinja2',
