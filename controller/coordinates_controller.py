@@ -2,6 +2,7 @@ from flask import Blueprint
 from werkzeug.exceptions import HTTPException
 
 from controller.method import Method
+from entity import City
 from service import CityService, CoordinateService, ImageService
 
 from .form import CoordinateForm
@@ -23,11 +24,16 @@ def _create():
             city = city_service.get_by_id(form.city_id.data)
             coordinate = coordinate_service.create(city, form.longitude.data, form.latitude.data)
             flash_message(f'Координата успешно создана ({coordinate.id})')
-            image_service.render_city_roads(city)
-            image_service.render_city_places(city)
+            _delete_images(city)
         except HTTPException as e:
             flash_warning(e.description)
     else:
         flash_form_errors(form)
 
     return redirect()
+
+
+def _delete_images(*cities: City) -> None:
+    for city in cities:
+        image_service.delete_city_roads(city)
+        image_service.delete_city_places(city)
