@@ -2,6 +2,7 @@ from flask import Blueprint
 from werkzeug.exceptions import HTTPException
 
 from controller.method import Method
+from entity import City
 from service import CoordinateService, RoadService, ImageService
 
 from .form import RoadForm
@@ -24,8 +25,7 @@ def _create():
             point_1 = coordinate_service.get_by_id(form.point_1_id.data)
             road = road_service.create(point_0, point_1)
             flash_message(f'Дорога успешно создана ({road.id})')
-            for city in {point_0.city, point_1.city}:
-                image_service.render_city_roads(city)
+            _delete_images(*{road.point_0.city, road.point_1.city})
         except HTTPException as e:
             flash_warning(e.description)
     else:
@@ -45,8 +45,7 @@ def _update(road_id: int):
             road.point_1 = coordinate_service.get_by_id(form.point_1_id.data)
             road_service.update(road)
             flash_message(f'Дорога успешно изменена ({road.id})')
-            for city in {road.point_0.city, road.point_1.city}:
-                image_service.render_city_roads(city)
+            _delete_images(*{road.point_0.city, road.point_1.city})
         except HTTPException as e:
             flash_warning(e.description)
     else:
@@ -61,9 +60,14 @@ def _delete(road_id: int):
         road = road_service.get_by_id(road_id)
         road_service.delete(road)
         flash_message(f'Дорога успешно удалена ({road.id})')
-        for city in {road.point_0.city, road.point_1.city}:
-            image_service.render_city_roads(city)
+        _delete_images(*{road.point_0.city, road.point_1.city})
     except HTTPException as e:
         flash_warning(e.description)
 
     return redirect()
+
+
+def _delete_images(*cities: City) -> None:
+    for city in cities:
+        image_service.delete_city_roads(city)
+        image_service.delete_city_places(city)
