@@ -42,7 +42,7 @@ def _roads(city_id: int):
     roads = sorted(road_service.get_by_city(city), key=lambda r: r.point_0.id)
 
     return render_template(
-        'roads_input.jinja2',
+        'city_roads.jinja2',
         city=city,
         roads=roads,
         map_path=image_service.get_city_roads(city)

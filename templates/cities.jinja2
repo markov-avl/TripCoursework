@@ -1,0 +1,72 @@
+{% extends 'base.jinja2' %}
+{% from 'macro/header.jinja2' import header %}
+{% from 'macro/map_modal.jinja2' import map_modal %}
+{% from 'macro/flash_messages.jinja2' import flash_messages %}
+
+{% block title %}
+    Редактор городов
+{% endblock %}
+
+{% block body %}
+    {{ header(0) }}
+
+    <div class="flex">
+        <div class="px-10 py-5 box-border w-full">
+            {{ flash_messages() }}
+
+            <h1 class="font-semibold text-2xl mb-3">Редактор городов</h1>
+            <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
+                  method="POST"
+                  class="flex flex-wrap gap-2">
+                <h2 class="basis-full">Создание города</h2>
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="text"
+                       placeholder="Название города"
+                       name="name">
+                <button type="submit"
+                        class="px-6 py-2 bg-green-500 rounded-md text-white">Создать город
+                </button>
+            </form>
+            <div>
+                <table class="mt-4 w-full border-collapse">
+                    <caption class="text-xl font-medium p-2" style="text-align: left">Таблица "Города"</caption>
+                    <tr class="border-b">
+                        <th class="border-r">ID</th>
+                        <th class="border-r">Название города</th>
+                        <th class="w-1/2"></th>
+                    </tr>
+                    {% for city in cities %}
+                        <tr class="py-4">
+                            <td class="border-r"
+                                id="city-id-{{ city.id }}">{{ city.id }}</td>
+                            <td contenteditable="true"
+                                id="city-name-{{ city.id }}">{{ city.name }}</td>
+                            <td>
+                                <button id="delete-btn-{{ city.id }}"
+                                        class="px-6 py-2 bg-gray-500 rounded-md text-white"
+                                        onclick="location.href='/cities/{{ city.id }}/places'">Редактировать места
+                                </button>
+                                <button id="delete-btn-{{ city.id }}"
+                                        class="px-6 py-2 bg-gray-500 rounded-md text-white"
+                                        onclick="location.href='/cities/{{ city.id }}/roads'">Редактировать дороги
+                                </button>
+                                <button id="edit-btn-{{ city.id }}"
+                                        class="px-6 py-2 bg-yellow-500 rounded-md text-white"
+                                        onclick="">Редактировать
+                                </button>
+                                <button id="delete-btn-{{ city.id }}"
+                                        class="px-6 py-2 bg-red-500 rounded-md text-white"
+                                        onclick="">X
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+{#    {{ map_modal(map_path) }}#}
+{% endblock %}
