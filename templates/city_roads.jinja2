@@ -15,9 +15,7 @@
             {{ flash_messages() }}
 
             <h1 class="font-semibold text-2xl mb-3">Редактор дорог города {{ city.name }}</h1>
-            <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
-                  method="POST"
-                  class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2">
                 <h2 class="basis-full">Создание точки</h2>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
@@ -34,31 +32,29 @@
                        placeholder="Долгота"
                        name="longitude">
                 <input hidden name="city_id" value="{{ city.id }}">
-                <button type="submit"
+                <button type="submit" onclick="postRequest(this.parentElement, '{{ url_for('coordinates._create') }}')"
                         class="px-6 py-2 bg-green-500 rounded-md text-white">Создать точку
                 </button>
-            </form>
-            <form action="{{ url_for('roads._create', redirect=request.path) }}"
-                  method="POST"
-                  class="flex flex-wrap gap-2 mt-4">
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
                 <h2 class="basis-full">Создание дороги</h2>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
-                  text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
-                  grow shrink basis-33-minus-1rem"
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
                        type="number"
                        placeholder="ID точки начала дороги"
                        name="point_0_id">
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none w-1/3 text-sm
-                  leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200
-                  shadow-sm grow shrink basis-33-minus-1rem"
+                              leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200
+                              shadow-sm grow shrink basis-33-minus-1rem"
                        type="number"
                        placeholder="ID точки конца дороги"
                        name="point_1_id">
                 <input hidden name="city_id" value="{{ city.id }}">
-                <button type="submit"
+                <button type="submit" onclick="postRequest(this.parentElement, '{{ url_for('roads._create') }}')"
                         class="px-6 py-2 bg-green-500 rounded-md text-white">Создать дорогу
                 </button>
-            </form>
+            </div>
             <div>
                 <table class="mt-4 w-full border-collapse">
                     <caption class="text-xl font-medium p-2" style="text-align: left">Таблица "Дороги"</caption>
@@ -70,31 +66,20 @@
                     </tr>
                     {% for road in roads %}
                         <tr class="py-4">
-                            <td {#contenteditable="true"#}
-                                    class="border-r"
-                                    id="road-id-{{ road.id }}">{{ road.id }}</td>
-                            <td contenteditable="true"
-                                id="road-start-point-id-{{ road.id }}">{{ road.point_0_id }}</td>
-                            <td {#contenteditable="true"#}
-                                    id="road-start-point-latitude-{{ road.id }}">{{ road.point_0.latitude }}</td>
-                            <td {#contenteditable="true"#}
-                                    class="border-r"
-                                    id="road-start-point-longitude-{{ road.id }}">{{ road.point_0.longitude }}</td>
-                            <td contenteditable="true"
-                                id="road-end-point-id-{{ road.id }}">{{ road.point_1_id }}</td>
-                            <td {#contenteditable="true"#}
-                                    id="road-end-point-latitude-{{ road.id }}">{{ road.point_1.latitude }}</td>
-                            <td {#contenteditable="true"#}
-                                    class="border-r"
-                                    id="road-end-point-longitude-{{ road.id }}">{{ road.point_1.longitude }}</td>
+                            <td class="border-r">{{ road.id }}</td>
+                            <td contenteditable="true" title="point_0_id">{{ road.point_0_id }}</td>
+                            <td>{{ road.point_0.latitude }}</td>
+                            <td class="border-r">{{ road.point_0.longitude }}</td>
+                            <td contenteditable="true" title="point_1_id">{{ road.point_1_id }}</td>
+                            <td>{{ road.point_1.latitude }}</td>
+                            <td class="border-r">{{ road.point_1.longitude }}</td>
                             <td>
-                                <button id="edit-btn-{{ road.id }}"
-                                        class="px-6 py-2 bg-yellow-500 rounded-md text-white"
-                                        onclick="editRoadData(this)">Редактировать
+                                <button class="px-6 py-2 bg-yellow-500 rounded-md text-white"
+                                        onclick="putRequest(this.parentElement.parentElement, '{{ url_for('roads._update', road_id=road.id) }}')">
+                                    Редактировать
                                 </button>
-                                <button id="delete-btn-{{ road.id }}"
-                                        class="px-6 py-2 bg-red-500 rounded-md text-white"
-                                        onclick="deleteRoad(this)">X
+                                <button class="px-6 py-2 bg-red-500 rounded-md text-white"
+                                        onclick="deleteRequest('{{ url_for('roads._delete', road_id=road.id) }}')">X
                                 </button>
                             </td>
                         </tr>

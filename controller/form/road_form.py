@@ -1,14 +1,11 @@
-from flask_wtf import FlaskForm
 from wtforms import IntegerField
 from wtforms.validators import InputRequired
 
 from .validator import DiffersFrom
+from .form import Form
 
 
-class RoadForm(FlaskForm):
-    class Meta:
-        csrf = False
-
+class RoadForm(Form):
     point_0_id = IntegerField(
         label='ID одного конца дороги',
         validators=[

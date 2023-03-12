@@ -24,3 +24,18 @@ class CityService:
         )
         self._city_repository.save(city)
         return city
+
+    def update(self, city: City | int, name: str = None) -> City:
+        city = self._get_entity(city)
+
+        if name:
+            city.name = name
+
+        self._city_repository.save(city)
+        return city
+
+    def delete(self, city: City | int) -> None:
+        self._city_repository.delete(self._get_entity(city))
+
+    def _get_entity(self, city: City | int) -> City:
+        return self.get_by_id(city) if isinstance(city, int) else city

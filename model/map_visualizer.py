@@ -202,12 +202,24 @@ class MapVisualizer:
 
     @staticmethod
     def _get_longitudes(longitudes: Iterable[float]) -> tuple[float, float, float]:
+        if len(longitudes) == 0:
+            return -180.0, 0, 180.0
+        if len(longitudes) == 1:
+            longitude = next(iter(longitudes))
+            return longitude, longitude, longitude
+
         min_ = min(longitudes)
         max_ = max(longitudes)
         return min_, max_, (min_ + max_) / 2
 
     @staticmethod
     def _get_latitudes(latitudes: Iterable[float]) -> tuple[float, float, float]:
+        if len(latitudes) == 0:
+            return -90.0, 0, 90.0
+        if len(latitudes) == 1:
+            latitude = next(iter(latitudes))
+            return latitude, latitude, latitude
+
         min_ = min(latitudes)
         max_ = max(latitudes)
         return min_, max_, (min_ + max_) / 2

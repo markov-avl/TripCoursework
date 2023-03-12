@@ -15,9 +15,7 @@
             {{ flash_messages() }}
 
             <h1 class="font-semibold text-2xl mb-3">Редактор мест города {{ city.name }}</h1>
-            <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
-                  method="POST"
-                  class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2">
                 <h2 class="basis-full">Создание места</h2>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
@@ -46,10 +44,10 @@
                        placeholder="Адрес"
                        name="address">
                 <input hidden name="city_id" value="{{ city.id }}">
-                <button type="submit"
+                <button type="submit" onclick="postRequest(this.parentElement, '{{ url_for('places._create') }}')"
                         class="px-6 py-2 bg-green-500 rounded-md text-white">Создать место
                 </button>
-            </form>
+            </div>
             <div>
                 <table class="mt-4 w-full border-collapse">
                     <caption class="text-xl font-medium p-2" style="text-align: left">Таблица "Дороги"</caption>
@@ -62,27 +60,20 @@
                     </tr>
                     {% for place in places %}
                         <tr class="py-4">
-                            <td class="border-r"
-                                id="place-id-{{ place.id }}">{{ place.id }}</td>
-                            <td contenteditable="true"
-                                id="place-name-{{ place.id }}"
-                                class="border-r">{{ place.name }}</td>
-                            <td contenteditable="true"
-                                id="place-address-{{ place.id }}"
-                                class="border-r">{{ place.address }}</td>
-                            <td contenteditable="true"
-                                id="place-coordinate-latitude-{{ place.id }}">{{ place.coordinate.latitude }}</td>
-                            <td contenteditable="true"
-                                id="place-coordinate-longitude-{{ place.id }}"
+                            <td hidden title="city_id">{{ city.id }}</td>
+                            <td class="border-r">{{ place.id }}</td>
+                            <td contenteditable="true" title="name" class="border-r">{{ place.name }}</td>
+                            <td contenteditable="true" title="address" class="border-r">{{ place.address }}</td>
+                            <td contenteditable="true" title="latitude">{{ place.coordinate.latitude }}</td>
+                            <td contenteditable="true" title="longitude"
                                 class="border-r">{{ place.coordinate.longitude }}</td>
                             <td>
-                                <button id="edit-btn-{{ place.id }}"
-                                        class="px-6 py-2 bg-yellow-500 rounded-md text-white"
-                                        onclick="editRoadData(this)">Редактировать
+                                <button class="px-6 py-2 bg-yellow-500 rounded-md text-white"
+                                        onclick="putRequest(this.parentElement.parentElement, '{{ url_for('places._update', place_id=place.id) }}')">
+                                    Редактировать
                                 </button>
-                                <button id="delete-btn-{{ place.id }}"
-                                        class="px-6 py-2 bg-red-500 rounded-md text-white"
-                                        onclick="deleteRoad(this)">X
+                                <button class="px-6 py-2 bg-red-500 rounded-md text-white"
+                                        onclick="deleteRequest('{{ url_for('places._delete', place_id=place.id) }}')">X
                                 </button>
                             </td>
                         </tr>

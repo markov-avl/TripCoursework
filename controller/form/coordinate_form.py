@@ -1,12 +1,10 @@
-from flask_wtf import FlaskForm
 from wtforms import IntegerField, FloatField
 from wtforms.validators import InputRequired, NumberRange
 
+from .form import Form
 
-class CoordinateForm(FlaskForm):
-    class Meta:
-        csrf = False
 
+class CoordinateForm(Form):
     city_id = IntegerField(
         label='ID города',
         validators=[

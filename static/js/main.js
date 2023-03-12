@@ -1,48 +1,85 @@
-const getId = (e) => e.id.split('-').at(-1)
-
-const getRoadDataById = (id) => ({
-    point_0_id: +document.getElementById('road-start-point-id-' + id).innerText,
-    point_1_id: +document.getElementById('road-end-point-id-' + id).innerText
-})
-
-const postFetch = async (url, data) => {
-    return await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json;charset=utf-8'
-        },
-        body: JSON.stringify(data)
-    })
+/**
+ * @param {HTMLElement} formElement
+ * @returns {object}
+ */
+const getFormData = (formElement) => {
+    const data = {};
+    for (const inputElement of formElement.getElementsByTagName('input')) {
+        data[inputElement.name] = inputElement.value
+    }
+    return data
 }
 
-const putFetch = async (url, data) => {
-    return await fetch(url, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json;charset=utf-8'
-        },
-        body: JSON.stringify(data)
-    })
+/**
+ * @param {HTMLElement} tableRowElement
+ * @returns {object}
+ */
+const getTableRowData = (tableRowElement) => {
+    const data = {};
+    for (const tdElement of tableRowElement.getElementsByTagName('td')) {
+        if (tdElement.title) {
+            data[tdElement.title] = tdElement.innerText
+        }
+    }
+    return data
 }
 
-const deleteFetch = async (url) => {
-    return await fetch(url, {
-        method: 'DELETE'
-    })
-}
 
-const editRoadData = async (e) => {
-    const id = getId(e)
-    const data = getRoadDataById(id)
-    await putFetch('/roads/' + id, data)
+/**
+ * @param {HTMLElement} formElement
+ * @param {string} url
+ * @returns {Promise<void>}
+ */
+const postRequest = async (formElement, url) => {
+    const data = getFormData(formElement)
+    await sendRequest(url, 'POST', data)
     window.location.reload()
 }
 
-const deleteRoad = async (e) => {
-    const id = getId(e)
-    await deleteFetch('/roads/' + id)
+
+/**
+ * @param {HTMLElement} tableRowElement
+ * @param {string} url
+ * @returns {Promise<void>}
+ */
+const putRequest = async (tableRowElement, url) => {
+    const data = getTableRowData(tableRowElement)
+    await sendRequest(url, 'PUT', data)
     window.location.reload()
 }
+
+
+/**
+ * @param {string} url
+ * @returns {Promise<void>}
+ */
+const deleteRequest = async (url) => {
+    await sendRequest(url, 'DELETE')
+    window.location.reload()
+}
+
+
+/**
+ * @param {string} url
+ * @param {string} method
+ * @param {object | null} data
+ * @returns {Promise<Response>}
+ */
+const sendRequest = async (url, method, data = null) => {
+    const request = {
+        method: method
+    }
+
+    if (data) {
+        request.headers = {
+            'Content-Type': 'application/json;charset=utf-8'
+        }
+        request.body = JSON.stringify(data)
+    }
+
+    return await fetch(url, request)
+}
+
 
 const magnifyingArea = document.getElementById('magnifying-area')
 const magnifyingImage = document.getElementById('magnifying-image')
