@@ -1,28 +1,46 @@
-const getRoadId = (e) => e.id.split('-').at(-1)
+const getId = (e) => e.id.split('-').at(-1)
 
-const getDataById = (id) => ({
+const getRoadDataById = (id) => ({
     point_0_id: +document.getElementById('road-start-point-id-' + id).innerText,
     point_1_id: +document.getElementById('road-end-point-id-' + id).innerText
 })
 
-const editRoadData = async (e) => {
-    const id = getRoadId(e)
-    const data = getDataById(id)
-    await fetch('/roads/' + id, {
+const postFetch = async (url, data) => {
+    return await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify(data)
+    })
+}
+
+const putFetch = async (url, data) => {
+    return await fetch(url, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
         },
         body: JSON.stringify(data)
     })
+}
+
+const deleteFetch = async (url) => {
+    return await fetch(url, {
+        method: 'DELETE'
+    })
+}
+
+const editRoadData = async (e) => {
+    const id = getId(e)
+    const data = getRoadDataById(id)
+    await putFetch('/roads/' + id, data)
     window.location.reload()
 }
 
 const deleteRoad = async (e) => {
-    const id = getRoadId(e)
-    await fetch('/roads/' + id, {
-        method: 'DELETE'
-    })
+    const id = getId(e)
+    await deleteFetch('/roads/' + id)
     window.location.reload()
 }
 
