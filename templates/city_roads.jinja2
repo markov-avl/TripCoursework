@@ -4,7 +4,7 @@
 {% from 'macro/flash_messages.jinja2' import flash_messages %}
 
 {% block title %}
-    Редактор дорог
+    Редактор дорог города {{ city.name }}
 {% endblock %}
 
 {% block body %}
@@ -14,7 +14,7 @@
         <div class="px-10 py-5 box-border w-full">
             {{ flash_messages() }}
 
-            <h1 class="font-semibold text-2xl mb-3">Редактор дорог</h1>
+            <h1 class="font-semibold text-2xl mb-3">Редактор дорог города {{ city.name }}</h1>
             <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
                   method="POST"
                   class="flex flex-wrap gap-2">

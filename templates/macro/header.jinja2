@@ -2,13 +2,39 @@
     <header>
         <nav class="flex w-full bg-blue-600">
             <h2 class="p-3 font-semibold text-slate-900 text-white mr-5 ml-5">Tripper</h2>
-            {% for i, menu in enumerate(['Редактор знаний', 'Редактор данных', 'Редактор задач']) %}
-                {% if i == active %}
-                    <a href="#" class="p-3 hover:bg-blue-500 text-white font-bold">{{ menu }}</a>
-                {% else %}
-                    <a href="#" class="p-3 hover:bg-blue-500 text-white">{{ menu }}</a>
-                {% endif %}
-            {% endfor %}
+            <ul class="navbar">
+                <li class="p-3 hover:bg-blue-500 text-white">
+                    <a href="/cities">Редактор знаний</a>
+                </li>
+                <li class="p-3 hover:bg-blue-500 text-white">
+                    <a href="#">Редактор данных</a>
+                    <ul class="subnavbar">
+                        <li class="p-3 bg-blue-600 hover:bg-blue-500 text-white">
+                            <a href="">1</a>
+                        </li>
+                        <li class="p-3 bg-blue-600 hover:bg-blue-500 text-white">
+                            <a href="">2</a>
+                        </li>
+                        <li class="p-3 bg-blue-600 hover:bg-blue-500 text-white">
+                            <a href="">3</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="p-3 hover:bg-blue-500 text-white">
+                    <a href="#">Редактор задач</a>
+                    <ul class="subnavbar">
+                        <li class="p-3 bg-blue-600 hover:bg-blue-500 text-white">
+                            <a href="">4</a>
+                        </li>
+                        <li class="p-3 bg-blue-600 hover:bg-blue-500 text-white">
+                            <a href="">5</a>
+                        </li>
+                        <li class="p-3 bg-blue-600 hover:bg-blue-500 text-white">
+                            <a href="">6</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
         </nav>
     </header>
 {% endmacro %}

@@ -1,0 +1,96 @@
+{% extends 'base.jinja2' %}
+{% from 'macro/header.jinja2' import header %}
+{% from 'macro/map_modal.jinja2' import map_modal %}
+{% from 'macro/flash_messages.jinja2' import flash_messages %}
+
+{% block title %}
+    Редактор мест города {{ city.name }}
+{% endblock %}
+
+{% block body %}
+    {{ header(0) }}
+
+    <div class="flex">
+        <div class="px-10 py-5 box-border w-full">
+            {{ flash_messages() }}
+
+            <h1 class="font-semibold text-2xl mb-3">Редактор мест города {{ city.name }}</h1>
+            <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
+                  method="POST"
+                  class="flex flex-wrap gap-2">
+                <h2 class="basis-full">Создание места</h2>
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="number"
+                       step="0.00001"
+                       placeholder="Широта"
+                       name="latitude">
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="number"
+                       step="0.00001"
+                       placeholder="Долгота"
+                       name="longitude">
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="text"
+                       placeholder="Название"
+                       name="name">
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="text"
+                       placeholder="Адрес"
+                       name="address">
+                <input hidden name="city_id" value="{{ city.id }}">
+                <button type="submit"
+                        class="px-6 py-2 bg-green-500 rounded-md text-white">Создать место
+                </button>
+            </form>
+            <div>
+                <table class="mt-4 w-full border-collapse">
+                    <caption class="text-xl font-medium p-2" style="text-align: left">Таблица "Дороги"</caption>
+                    <tr class="border-b">
+                        <th class="border-r">ID</th>
+                        <th class="border-r">Название</th>
+                        <th class="border-r">Адрес</th>
+                        <th colspan="2" class="border-r">Координата (Широта, Долгота)</th>
+                        <th class="w-1/5"></th>
+                    </tr>
+                    {% for place in places %}
+                        <tr class="py-4">
+                            <td class="border-r"
+                                id="place-id-{{ place.id }}">{{ place.id }}</td>
+                            <td contenteditable="true"
+                                id="place-name-{{ place.id }}"
+                                class="border-r">{{ place.name }}</td>
+                            <td contenteditable="true"
+                                id="place-address-{{ place.id }}"
+                                class="border-r">{{ place.address }}</td>
+                            <td contenteditable="true"
+                                id="place-coordinate-latitude-{{ place.id }}">{{ place.coordinate.latitude }}</td>
+                            <td contenteditable="true"
+                                id="place-coordinate-longitude-{{ place.id }}"
+                                class="border-r">{{ place.coordinate.longitude }}</td>
+                            <td>
+                                <button id="edit-btn-{{ place.id }}"
+                                        class="px-6 py-2 bg-yellow-500 rounded-md text-white"
+                                        onclick="editRoadData(this)">Редактировать
+                                </button>
+                                <button id="delete-btn-{{ place.id }}"
+                                        class="px-6 py-2 bg-red-500 rounded-md text-white"
+                                        onclick="deleteRoad(this)">X
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{ map_modal(map_path) }}
+{% endblock %}
