@@ -6,7 +6,8 @@ from entity import City
 from service import CityService, CoordinateService, ImageService
 
 from .form import CoordinateForm
-from .helper import redirect, get_form, flash_message, flash_warning, flash_form_errors
+from .helper import get_form, flash_message, flash_warning, flash_form_errors, created, bad_request, \
+    unprocessable_content
 
 blueprint = Blueprint('coordinates', __name__, url_prefix='/coordinates')
 
@@ -21,19 +22,18 @@ def _create():
 
     if form.validate_on_submit():
         try:
-            city = city_service.get_by_id(form.city_id.data)
-            coordinate = coordinate_service.create(city, form.longitude.data, form.latitude.data)
+            coordinate = coordinate_service.create(form.city_id.data, form.longitude.data, form.latitude.data)
             flash_message(f'Координата успешно создана ({coordinate.id})')
-            _delete_images(city)
+            _delete_images(coordinate.city)
+            return created(id=coordinate.id)
         except HTTPException as e:
             flash_warning(e.description)
-    else:
-        flash_form_errors(form)
+            return unprocessable_content(errors=[e.description])
 
-    return redirect()
+    flash_form_errors(form)
+    return bad_request(errors=form.extended_errors)
 
 
 def _delete_images(*cities: City) -> None:
     for city in cities:
         image_service.delete_city_roads(city)
-        image_service.delete_city_places(city)

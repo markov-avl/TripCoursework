@@ -1,7 +1,9 @@
 from abc import ABC
 from typing import Type, Any, Sequence
 
+from flask import abort
 from sqlalchemy import select, Result
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import Select
 
 from database import database
@@ -14,7 +16,10 @@ class Repository(ABC):
 
     @staticmethod
     def _execute(statement: Select) -> Result:
-        return database.session.execute(statement)
+        try:
+            return database.session.execute(statement)
+        except IntegrityError:
+            abort(400, 'Передана невалидная сущность')
 
     @staticmethod
     def _fetch(statement: Select) -> Any:
@@ -29,13 +34,19 @@ class Repository(ABC):
 
     @staticmethod
     def save(*entities: Entity) -> None:
-        database.session.add_all(entities)
-        database.session.commit()
+        try:
+            database.session.add_all(entities)
+            database.session.commit()
+        except IntegrityError:
+            abort(422, 'Передана невалидная сущность')
 
     @staticmethod
     def delete(entity: Entity) -> None:
-        database.session.delete(entity)
-        database.session.commit()
+        try:
+            database.session.delete(entity)
+            database.session.commit()
+        except IntegrityError:
+            abort(422, 'Передана невалидная сущность')
 
     def find_all(self) -> Sequence[Any]:
         statement = select(self._entity_type)

@@ -15,9 +15,7 @@
             {{ flash_messages() }}
 
             <h1 class="font-semibold text-2xl mb-3">Редактор городов</h1>
-            <form action="{{ url_for('coordinates._create', redirect=request.path) }}"
-                  method="POST"
-                  class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2">
                 <h2 class="basis-full">Создание города</h2>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
@@ -25,10 +23,10 @@
                        type="text"
                        placeholder="Название города"
                        name="name">
-                <button type="submit"
+                <button type="submit" onclick="postRequest(this.parentElement, '{{ url_for('cities._create') }}')"
                         class="px-6 py-2 bg-green-500 rounded-md text-white">Создать город
                 </button>
-            </form>
+            </div>
             <div>
                 <table class="mt-4 w-full border-collapse">
                     <caption class="text-xl font-medium p-2" style="text-align: left">Таблица "Города"</caption>
@@ -39,26 +37,23 @@
                     </tr>
                     {% for city in cities %}
                         <tr class="py-4">
-                            <td class="border-r"
-                                id="city-id-{{ city.id }}">{{ city.id }}</td>
-                            <td contenteditable="true"
-                                id="city-name-{{ city.id }}">{{ city.name }}</td>
+                            <td class="border-r">{{ city.id }}</td>
+                            <td contenteditable="true" title="name" class="border-r">{{ city.name }}</td>
                             <td>
-                                <button id="delete-btn-{{ city.id }}"
-                                        class="px-6 py-2 bg-gray-500 rounded-md text-white"
-                                        onclick="location.href='/cities/{{ city.id }}/places'">Редактировать места
+                                <button class="px-6 py-2 bg-gray-500 rounded-md text-white"
+                                        onclick="location.href='{{ url_for('cities._places', city_id=city.id) }}'">
+                                    Редактировать места
                                 </button>
-                                <button id="delete-btn-{{ city.id }}"
-                                        class="px-6 py-2 bg-gray-500 rounded-md text-white"
-                                        onclick="location.href='/cities/{{ city.id }}/roads'">Редактировать дороги
+                                <button class="px-6 py-2 bg-gray-500 rounded-md text-white"
+                                        onclick="location.href='{{ url_for('cities._roads', city_id=city.id) }}'">
+                                    Редактировать дороги
                                 </button>
-                                <button id="edit-btn-{{ city.id }}"
-                                        class="px-6 py-2 bg-yellow-500 rounded-md text-white"
-                                        onclick="">Редактировать
+                                <button class="px-6 py-2 bg-yellow-500 rounded-md text-white"
+                                        onclick="putRequest(this.parentElement.parentElement, '{{ url_for('cities._update', city_id=city.id) }}')">
+                                    Редактировать
                                 </button>
-                                <button id="delete-btn-{{ city.id }}"
-                                        class="px-6 py-2 bg-red-500 rounded-md text-white"
-                                        onclick="">X
+                                <button class="px-6 py-2 bg-red-500 rounded-md text-white"
+                                        onclick="deleteRequest('{{ url_for('cities._delete', city_id=city.id) }}')">X
                                 </button>
                             </td>
                         </tr>
@@ -68,5 +63,4 @@
         </div>
     </div>
 
-{#    {{ map_modal(map_path) }}#}
 {% endblock %}

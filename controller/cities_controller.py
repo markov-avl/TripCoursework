@@ -1,8 +1,14 @@
 from flask import Blueprint, Response, request, abort, render_template
+from werkzeug.exceptions import HTTPException
 
-from controller.method import Method
+from entity import City
 from model import MapVisualizer, ShortestPathFinder
 from service import CityService, PlaceService, RoadService, ImageService
+
+from .form import CityForm
+from .method import Method
+from .helper import get_form, flash_message, flash_warning, flash_form_errors, created, no_content, bad_request, \
+    unprocessable_content
 
 blueprint = Blueprint('cities', __name__, url_prefix='/cities')
 
@@ -22,6 +28,53 @@ def _index():
     )
 
 
+@blueprint.route('/', methods=[Method.POST])
+def _create():
+    form: CityForm = get_form(CityForm)
+
+    if form.validate_on_submit():
+        try:
+            city = city_service.create(form.name.data)
+            flash_message(f'Город успешно создан ({city.id})')
+            return created(id=city.id)
+        except HTTPException as e:
+            flash_warning(e.description)
+            return unprocessable_content(errors=[e.description])
+
+    flash_form_errors(form)
+    return bad_request(errors=form.extended_errors)
+
+
+@blueprint.route('/<int:city_id>', methods=[Method.PUT])
+def _update(city_id: int):
+    form: CityForm = get_form(CityForm)
+
+    if form.validate_on_submit():
+        try:
+            city = city_service.update(city_id, form.name.data)
+            flash_message(f'Город успешно изменен ({city.id})')
+            return no_content()
+        except HTTPException as e:
+            flash_warning(e.description)
+            return unprocessable_content(errors=[e.description])
+
+    flash_form_errors(form)
+    return bad_request(errors=form.extended_errors)
+
+
+@blueprint.route('/<int:city_id>', methods=[Method.DELETE])
+def _delete(city_id: int):
+    try:
+        city = city_service.get_by_id(city_id)
+        city_service.delete(city)
+        flash_message(f'Город успешно удален ({city.id})')
+        _delete_images(city)
+        return no_content()
+    except HTTPException as e:
+        flash_warning(e.description)
+        return unprocessable_content(errors=[e.description])
+
+
 @blueprint.route('/<int:city_id>/map', methods=[Method.GET])
 def _map(city_id: int):
     city = city_service.get_by_id(city_id)
@@ -39,7 +92,7 @@ def _map(city_id: int):
 @blueprint.route('/<int:city_id>/roads', methods=[Method.GET])
 def _roads(city_id: int):
     city = city_service.get_by_id(city_id)
-    roads = sorted(road_service.get_by_city(city), key=lambda r: r.point_0.id)
+    roads = sorted(road_service.get_by_city(city), key=lambda r: (r.point_0.id, r.point_1.id))
 
     return render_template(
         'city_roads.jinja2',
@@ -89,3 +142,9 @@ def _parse_integer_param(name: str) -> int:
 
 def _parse_boolean_param(name: str) -> bool:
     return request.args.get(name, 'true') != 'false'
+
+
+def _delete_images(*cities: City) -> None:
+    for city in cities:
+        image_service.delete_city_roads(city)
+        image_service.delete_city_places(city)
