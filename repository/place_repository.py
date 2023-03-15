@@ -19,11 +19,12 @@ class PlaceRepository(Repository):
     def find_by_id(self, id_: int) -> Place | None:
         return super().find_by_id(id_)
 
-    def find_by_city(self, city: City) -> Sequence[Place]:
+    def find_by_city(self, city: City | int) -> Sequence[Place]:
+        condition = (Coordinate.city_id if isinstance(city, int) else Coordinate.city) == city
         statement = (
             select(self._entity_type).
             join(Coordinate, Coordinate.id == Place.coordinate_id).
-            where(Coordinate.city == city).
+            where(condition).
             order_by(Coordinate.id)
         )
         return super()._fetch_all(statement)
