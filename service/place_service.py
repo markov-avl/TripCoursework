@@ -20,7 +20,7 @@ class PlaceService:
             return place
         abort(404, 'Место не найдено')
 
-    def get_by_city(self, city: City) -> Sequence[Place]:
+    def get_by_city(self, city: City | int) -> Sequence[Place]:
         return self._place_repository.find_by_city(city)
 
     def create(self, coordinate: Coordinate | int, name: str, address: str) -> Place:

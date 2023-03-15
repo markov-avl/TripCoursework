@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from werkzeug.exceptions import HTTPException
 
 from entity import City
@@ -6,7 +6,7 @@ from service import CoordinateService, ImageService, PlaceService, CityService
 
 from .form import PlaceForm
 from .method import Method
-from .helper import get_form, flash_message, flash_warning, flash_form_errors, created, no_content, bad_request, \
+from .helper import get_form, flash_message, flash_warning, flash_form_errors, ok, created, no_content, bad_request, \
     unprocessable_content
 
 blueprint = Blueprint('places', __name__, url_prefix='/places')
@@ -15,6 +15,14 @@ coordinate_service = CoordinateService()
 city_service = CityService()
 place_service = PlaceService()
 image_service = ImageService()
+
+
+@blueprint.route('/', methods=[Method.GET])
+def _get():
+    city_id = _parse_integer_param('city_id')
+    places = place_service.get_by_city(city_id) if city_id else place_service.get_all()
+    data = [dict(id=p.id, name=p.name, address=p.address) for p in sorted(places, key=lambda p: p.name)]
+    return ok(data=data)
 
 
 @blueprint.route('/', methods=[Method.POST])
@@ -68,6 +76,13 @@ def _delete(place_id: int):
     except HTTPException as e:
         flash_warning(e.description)
         return unprocessable_content(errors=[e.description])
+
+
+def _parse_integer_param(name: str) -> int | None:
+    try:
+        return int(request.args.get(name, ''))
+    except ValueError:
+        return
 
 
 def _delete_images(*cities: City) -> None:

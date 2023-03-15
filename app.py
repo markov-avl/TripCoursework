@@ -7,6 +7,7 @@ from database import database, database_url
 
 app = Flask(__name__)
 app.secret_key = os.urandom(32)
+app.config['JSON_AS_ASCII'] = False
 
 # Регистрация эндпоинтов
 app.register_blueprint(controller.index_blueprint)
