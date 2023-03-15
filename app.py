@@ -16,6 +16,7 @@ app.register_blueprint(controller.cities_blueprint)
 app.register_blueprint(controller.coordinates_blueprint)
 app.register_blueprint(controller.roads_blueprint)
 app.register_blueprint(controller.places_blueprint)
+app.register_blueprint(controller.trip_blueprint)
 
 # Настройка базы данных
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
