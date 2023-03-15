@@ -5,4 +5,4 @@ from .city_repository import CityRepository
 from .coordinate_repository import CoordinateRepository
 from .place_repository import PlaceRepository
 from .road_repository import RoadRepository
-from .route_repository import RouteRepository
+from .trip_repository import TripRepository
