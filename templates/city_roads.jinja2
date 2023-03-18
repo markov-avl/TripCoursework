@@ -37,6 +37,19 @@
                 </button>
             </div>
             <div class="flex flex-wrap gap-2 mt-4">
+                <h2 class="basis-full">Удаление точки</h2>
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="number"
+                       placeholder="ID точки"
+                       name="point_id">
+                <input hidden name="city_id" value="{{ city.id }}">
+                <button type="submit" onclick="deleteRequest('')" {#coordinate._delete#}
+                        class="px-6 py-2 bg-red-500 rounded-md text-white">Удалить точку
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
                 <h2 class="basis-full">Создание дороги</h2>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm

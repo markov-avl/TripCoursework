@@ -1,0 +1,115 @@
+{% extends 'base.jinja2' %}
+{% from 'macro/header.jinja2' import header %}
+{% from 'macro/map_modal.jinja2' import map_modal %}
+{% from 'macro/flash_messages.jinja2' import flash_messages %}
+
+{% block title %}
+    Редактор действительности
+{% endblock %}
+
+{% block body %}
+    {{ header(0) }}
+
+    <div class="flex">
+        <div class="px-10 py-5 box-border w-full">
+            {{ flash_messages() }}
+
+            <h1 class="font-semibold text-2xl mb-3">Редактор действительности</h1>
+            <div class="flex flex-wrap gap-2">
+                <h2 class="basis-full">Выбор города</h2>
+                <select class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                        name="city"
+                        id="cities">
+                    {% for city in cities %}
+                        <option id="city-id-{{ city.id }}" value="{{ city.name }}">{{ city.name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" onclick="getCityPlaces()"
+                        class="px-6 py-2 bg-green-500 rounded-md text-white">Выбрать город
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <h2 class="basis-full">Период путешествия</h2>
+                <div class="px-3 py-2">Начало:</div>
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       min=""
+                       type="date"
+                       id="starts-at"
+                       required>
+                <div class="px-3 py-2">Конец:</div>
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="date"
+                       id="ends-at"
+                       required>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <h2 class="basis-full">Период бодрствования</h2>
+                <div class="px-3 py-2">Начало:</div>
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="time"
+                       min="00:01"
+                       max="23:59"
+                       required
+                       id="awakening-at">
+                <div class="px-3 py-2">Конец:</div>
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                       type="time"
+                       min="00:01"
+                       max="23:59"
+                       required
+                       id="resting-at">
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <h2 class="basis-full">Выбрать место ночлега</h2>
+                <select class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                        name="places"
+                        id="stay-place"></select>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <h2 class="basis-full">Добавить место в список</h2>
+                <select class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem"
+                        name="places"
+                        id="places"></select>
+                <button type="submit" onclick="addCityPlace()"
+                        class="px-6 py-2 bg-green-500 rounded-md text-white">Добавить место
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <table id="addedPlaces"
+                       class="mt-4 w-full border-collapse">
+                    <caption class="text-xl font-medium p-2" style="text-align: left">Выбранные места для посещения
+                    </caption>
+                    <tr class="border-b">
+                        <th class="border-r">Название</th>
+                        <th class="border-r">Адрес</th>
+                        <th class="border-r">Длительность</th>
+                        <th class="border-r">Дата</th>
+                        <th class="border-r">Время</th>
+                        <th class="border-r">Обязательно</th>
+                        <th class=""></th>
+                    </tr>
+                </table>
+            </div>
+            <button type="submit"
+                    onclick="routeBuilt({{ secret }})"
+                    class="px-6 py-2 bg-green-500 rounded-md text-white mt-4">Построить маршрут
+            </button>
+        </div>
+    </div>
+
+    {{ map_modal(map_path) }}
+{% endblock %}

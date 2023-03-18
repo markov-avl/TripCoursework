@@ -80,6 +80,136 @@ const sendRequest = async (url, method, data = null) => {
     return await fetch(url, request)
 }
 
+const getSelectedId = (elementId) => {
+    let element = document.getElementById(elementId)
+    return +element
+        .options[element.selectedIndex]
+        .id
+        .split('-')
+        .at(-1)
+}
+
+let cityPlaces = []
+let cityId = 0
+
+const getCityPlaces = async () => {
+    let citiesElement = document.getElementById('places')
+    let stayPlaceElement = document.getElementById('stay-place')
+    cityId = getSelectedId('cities')
+    cityPlaces = await fetch('/places/?city_id=' + cityId)
+        .then(r => r.json())
+        .then(r => r.data)
+
+    stayPlaceElement.innerHTML = ''
+    cityPlaces.forEach(place => stayPlaceElement.innerHTML +=
+        `<option id="place-${place.id}">${place.name} (${place.address})</option>`)
+
+    citiesElement.innerHTML = ''
+    cityPlaces.forEach(place => citiesElement.innerHTML +=
+        `<option id="place-${place.id}">${place.name} (${place.address})</option>`)
+}
+
+const selectedPlaces = []
+
+const addCityPlace = () => {
+    const selectedId = getSelectedId('places')
+    selectedPlaces.unshift(cityPlaces.find(place => place.id === selectedId))
+    let addedPlacesElement = document.getElementById('addedPlaces')
+
+    addedPlacesElement.innerHTML =
+        `
+        <caption class="text-xl font-medium p-2" style="text-align: left">Выбранные места</caption>
+        <tr class="border-b">
+            <th class="border-r">Название</th>
+            <th class="border-r">Адрес</th>
+            <th class="border-r">Длительность</th>
+            <th class="border-r">Дата</th>
+            <th class="border-r">Время</th>
+            <th class="border-r">Обязательно</th>
+            <th class=""></th>
+        </tr>
+        `
+
+    selectedPlaces.forEach((place, index) => addedPlacesElement.innerHTML +=
+        `
+        <tr class="py-4">
+            <td class="border-r">${place.name}</td>
+            <td class="border-r">${place.address}</td>
+            <td class="border-r">
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem" 
+                          type="time" 
+                          min="00:01" 
+                          max="23:59" 
+                          required
+                          id="stay-time-${index}">
+            </td>
+            <td class="border-r">
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-В данном разделе отображаются справки о доходах по форме 2-НДФЛ, полученные от работодателя или иного налогового агента33-minus-1rem" 
+                          type="date" 
+                          required
+                          id="date-${index}">
+            </td>
+            <td class="border-r">
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem" 
+                          type="time"
+                          min="00:01" 
+                          max="23:59"
+                          required
+                          id="time-${index}">
+            </td>
+            <td class="border-r">
+                <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
+                              text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
+                              grow shrink basis-33-minus-1rem" 
+                              type="checkbox" 
+                              checked 
+                              required
+                              id="priority-${index}">
+            </td>
+            <td>
+                <button class="px-6 py-2 bg-red-500 rounded-md text-white"
+                        onclick="">X
+                </button>
+            </td>
+        </tr>
+        `
+    )
+}
+
+const routeBuilt = async (secret) => {
+    let places = selectedPlaces.map((place, index) => {
+        return {
+            place_id: place.id,
+            stay_time: document.getElementById('stay-time-' + index).value,
+            date: document.getElementById('date-' + index).value,
+            time: document.getElementById('time-' + index).value,
+            priority: document.getElementById('priority-' + index).checked
+        }
+    })
+
+    let data = {
+            city_id: cityId,
+            accommodation_id: +document.getElementById('stay-place')
+                .options[document.getElementById('stay-place').selectedIndex]
+                .id.split('-').at(-1),
+            starts_at: document.getElementById('starts-at').value,
+            ends_at: document.getElementById('ends-at').value,
+            awakening_at: document.getElementById('awakening-at').value,
+            resting_at: document.getElementById('resting-at').value,
+            places
+        }
+    console.log(data)
+    await fetch('/trips/' + secret, {
+        method: 'PUT',
+        data
+    })
+}
 
 const magnifyingArea = document.getElementById('magnifying-area')
 const magnifyingImage = document.getElementById('magnifying-image')
