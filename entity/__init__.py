@@ -5,6 +5,6 @@ from .city import City
 from .coordinate import Coordinate
 from .place import Place
 from .road import Road
-from .route import Route
+from .trip import Trip
 
 from .priority import Priority

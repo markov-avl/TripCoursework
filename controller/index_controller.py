@@ -1,26 +1,14 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, url_for
 
-from controller.method import Method
-from service import CityService
+from .method import Method
+from service import TripService
 
 blueprint = Blueprint('index', __name__)
-city_service = CityService()
+
+trip_service = TripService()
 
 
 @blueprint.route('/', methods=[Method.GET])
-def index():
-    cities = sorted(city_service.get_all(), key=lambda c: c.name)
-
-    return render_template(
-        'data_editor.jinja2',
-        cities=cities
-    )
-
-# @blueprint.route('/editor', methods=[Method.GET])
-# def _index():
-#     cities = sorted(city_service.get_all(), key=lambda c: c.name)
-#
-#     return render_template(
-#         'data_editor.jinja2',
-#         cities=cities
-#     )
+def _index():
+    trip = trip_service.create()
+    return redirect(url_for('trip._index', secret=trip.secret))
