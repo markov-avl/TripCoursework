@@ -1,6 +1,6 @@
 from .repository import Repository
 
-from .checkpoint_repository import CheckpointRepository
+from .visit_repository import VisitRepository
 from .city_repository import CityRepository
 from .coordinate_repository import CoordinateRepository
 from .place_repository import PlaceRepository

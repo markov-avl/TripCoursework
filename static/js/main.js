@@ -148,7 +148,7 @@ const addCityPlace = () => {
             <td class="border-r">
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
-                              grow shrink basis-В данном разделе отображаются справки о доходах по форме 2-НДФЛ, полученные от работодателя или иного налогового агента33-minus-1rem" 
+                              grow shrink basis-33-minus-1rem" 
                           type="date" 
                           required
                           id="date-${index}">
@@ -194,21 +194,25 @@ const routeBuilt = async (secret) => {
     })
 
     let data = {
-            city_id: cityId,
-            accommodation_id: +document.getElementById('stay-place')
-                .options[document.getElementById('stay-place').selectedIndex]
-                .id.split('-').at(-1),
-            starts_at: document.getElementById('starts-at').value,
-            ends_at: document.getElementById('ends-at').value,
-            awakening_at: document.getElementById('awakening-at').value,
-            resting_at: document.getElementById('resting-at').value,
-            places
-        }
-    console.log(data)
+        city_id: cityId,
+        accommodation_id: +document.getElementById('stay-place')
+            .options[document.getElementById('stay-place').selectedIndex]
+            .id.split('-').at(-1),
+        starts_at: document.getElementById('starts-at').value,
+        ends_at: document.getElementById('ends-at').value,
+        awakens_at: document.getElementById('awakens-at').value,
+        rests_at: document.getElementById('rests-at').value,
+        visits: places
+    }
     await fetch('/trips/' + secret, {
         method: 'PUT',
-        data
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
     })
+
+    window.location.reload()
 }
 
 const magnifyingArea = document.getElementById('magnifying-area')

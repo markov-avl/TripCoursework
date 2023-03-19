@@ -24,13 +24,12 @@ class PlaceService:
         return self._place_repository.find_by_city(city)
 
     def create(self, coordinate: Coordinate | int, name: str, address: str) -> Place:
-        coordinate_id = coordinate if isinstance(coordinate, int) else coordinate.id
-
         place = Place(
-            coordinate_id=coordinate_id,
+            coordinate_id=coordinate if isinstance(coordinate, int) else coordinate.id,
             name=name,
             address=address
         )
+
         self._place_repository.save(place)
         return place
 
