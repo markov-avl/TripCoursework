@@ -1,12 +1,12 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, redirect, url_for
 
 from entity import Priority
 from .form import TripForm
-from .helper import get_form, flash_form_errors, ok
+from .helper import get_form, flash_form_errors, ok, flash_message
 from .method import Method
 from service import TripService, CityService, VisitService
 
-blueprint = Blueprint('trip', __name__, url_prefix='/trips')
+blueprint = Blueprint('trips', __name__, url_prefix='/trips')
 
 trip_service = TripService()
 city_service = CityService()
@@ -51,3 +51,13 @@ def _update(secret: str):
 
     flash_form_errors(form)
     return ok(errors=form.extended_errors)
+
+
+@blueprint.route('/<string:secret>/routes', methods=[Method.GET])
+def _routes(secret: str):
+    trip = trip_service.get_by_secret(secret)
+
+    # <-- Здесь должна быть проверка данных из БД и формирование модели
+
+    flash_message('Вы были возвращены на страницу редактирования, потому что страницы построения маршрутов ещё нет :(')
+    return redirect(url_for('trips._index', secret=trip.secret))

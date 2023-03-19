@@ -212,7 +212,7 @@ const routeBuilt = async (secret) => {
         body: JSON.stringify(data)
     })
 
-    window.location.reload()
+    window.location = `/trips/${secret}/routes`
 }
 
 const magnifyingArea = document.getElementById('magnifying-area')
