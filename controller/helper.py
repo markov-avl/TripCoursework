@@ -15,7 +15,8 @@ def redirect() -> flask.Response:
 
 
 def get_form(form_type: Type[Form]) -> Form | Any:
-    return form_type(flask.request.form) if flask.request.form else form_type(data=flask.request.json)
+    fr = flask.request
+    return form_type(flask.request.form) if flask.request.form else form_type.from_json(flask.request.json)
 
 
 def flash_message(text: str) -> None:

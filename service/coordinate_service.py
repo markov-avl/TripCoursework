@@ -28,13 +28,12 @@ class CoordinateService:
         return self._coordinate_repository.find_by_city_joined_road_with_repetitions_ordered_by_id(city)
 
     def create(self, city: City | int, longitude: float, latitude: float) -> Coordinate:
-        city_id = city if isinstance(city, int) else city.id
-
         coordinate = Coordinate(
-            city_id=city_id,
+            city_id=city if isinstance(city, int) else city.id,
             longitude=longitude,
             latitude=latitude
         )
+
         self._coordinate_repository.save(coordinate)
         return coordinate
 

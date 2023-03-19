@@ -1,5 +1,6 @@
 import os
 
+import wtforms_json
 from flask import Flask
 
 import controller
@@ -21,6 +22,9 @@ app.register_blueprint(controller.trip_blueprint)
 # Настройка базы данных
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 database.init_app(app)
+
+# Настройка форм
+wtforms_json.init()
 
 # Расширение глобальных переменных/функций шаблонизатора
 app.jinja_env.globals['enumerate'] = enumerate

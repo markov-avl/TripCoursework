@@ -1,4 +1,4 @@
-from typing import Sequence, overload
+from typing import Sequence
 
 from flask import abort
 
@@ -18,19 +18,17 @@ class RoadService:
     def get_by_id(self, id_: int) -> Road:
         if road := self._road_repository.find_by_id(id_):
             return road
-        abort(404, 'Road not found')
+        abort(404, 'Дорога не найдена')
 
     def get_by_city(self, city: City) -> Sequence[Road]:
         return self._road_repository.find_by_city(city)
 
     def create(self, point_0: Coordinate | int, point_1: Coordinate | int) -> Road:
-        point_0_id = point_0 if isinstance(point_0, int) else point_0.id
-        point_1_id = point_1 if isinstance(point_1, int) else point_1.id
-
         road = Road(
-            point_0_id=point_0_id,
-            point_1_id=point_1_id
+            point_0_id=point_0 if isinstance(point_0, int) else point_0.id,
+            point_1_id=point_1 if isinstance(point_1, int) else point_1.id
         )
+
         self._road_repository.save(road)
         return road
 

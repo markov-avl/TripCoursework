@@ -1,6 +1,6 @@
 from .entity import Entity
 
-from .checkpoint import Checkpoint
+from .visit import Visit
 from .city import City
 from .coordinate import Coordinate
 from .place import Place
