@@ -11,4 +11,4 @@ trip_service = TripService()
 @blueprint.route('/', methods=[Method.GET])
 def _index():
     trip = trip_service.create()
-    return redirect(url_for('trip._index', secret=trip.secret))
+    return redirect(url_for('trips._index', secret=trip.secret))
