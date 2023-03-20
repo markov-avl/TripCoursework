@@ -100,6 +100,16 @@ const getCityPlaces = async () => {
         .then(r => r.json())
         .then(r => r.data)
 
+    if (cityId > 0) {
+        let button = document.getElementById('send-data')
+        button.classList.add('bg-green-500')
+        button.classList.remove('bg-gray-500')
+    } else {
+        let button = document.getElementById('send-data')
+        button.classList.add('bg-gray-500')
+        button.classList.remove('bg-green-500')
+    }
+
     stayPlaceElement.innerHTML = ''
     cityPlaces.forEach(place => stayPlaceElement.innerHTML +=
         `<option id="place-${place.id}">${place.name} (${place.address})</option>`)
@@ -174,6 +184,7 @@ const addCityPlace = () => {
             </td>
             <td>
                 <button class="px-6 py-2 bg-red-500 rounded-md text-white"
+                        id=""
                         onclick="">X
                 </button>
             </td>
@@ -183,36 +194,39 @@ const addCityPlace = () => {
 }
 
 const routeBuilt = async (secret) => {
-    let places = selectedPlaces.map((place, index) => {
-        return {
-            place_id: place.id,
-            stay_time: document.getElementById('stay-time-' + index).value,
-            date: document.getElementById('date-' + index).value,
-            time: document.getElementById('time-' + index).value,
-            priority: document.getElementById('priority-' + index).checked
+    if (cityId !== 0) {
+        let places = selectedPlaces.map((place, index) => {
+            return {
+                place_id: place.id,
+                stay_time: document.getElementById('stay-time-' + index).value,
+                date: new Date(document.getElementById('date-' + index).value).toLocaleDateString(),
+                time: document.getElementById('time-' + index).value,
+                priority: document.getElementById('priority-' + index).checked
+            }
+        })
+
+        let data = {
+            city_id: cityId,
+            accommodation_id: +document.getElementById('stay-place')
+                .options[document.getElementById('stay-place').selectedIndex]
+                .id.split('-').at(-1),
+            starts_at: new Date(document.getElementById('starts-at').value).toLocaleDateString(),
+            ends_at: new Date(document.getElementById('ends-at').value).toLocaleDateString(),
+            awakens_at: document.getElementById('awakens-at').value,
+            rests_at: document.getElementById('rests-at').value,
+            visits: places
         }
-    })
 
-    let data = {
-        city_id: cityId,
-        accommodation_id: +document.getElementById('stay-place')
-            .options[document.getElementById('stay-place').selectedIndex]
-            .id.split('-').at(-1),
-        starts_at: document.getElementById('starts-at').value,
-        ends_at: document.getElementById('ends-at').value,
-        awakens_at: document.getElementById('awakens-at').value,
-        rests_at: document.getElementById('rests-at').value,
-        visits: places
+        await fetch('/trips/' + secret, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+
+        window.location = `/trips/${secret}/routes`
     }
-    await fetch('/trips/' + secret, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-
-    window.location = `/trips/${secret}/routes`
 }
 
 const magnifyingArea = document.getElementById('magnifying-area')

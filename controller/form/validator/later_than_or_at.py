@@ -24,7 +24,7 @@ class LaterThanOrAt:
             raise ValidationError(
                 field.gettext("Invalid field name '%s'.") % self.fieldname
             ) from exc
-        if field.data >= other.data:
+        if field.data and other.data and field.data >= other.data:
             return
 
         d = {
