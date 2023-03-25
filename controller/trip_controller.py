@@ -15,7 +15,9 @@ visit_service = VisitService()
 
 @blueprint.route('/<string:secret>', methods=[Method.GET])
 def _index(secret: str):
-    trip = trip_service.get_by_secret(secret)
+    # TODO: когда будет более или менее стабильная версия, вернуть эту строчку
+    # trip = trip_service.get_by_secret(secret)
+    trip = trip_service.get_by_id(int(secret)) if secret.isdigit() else trip_service.get_by_secret(secret)  # для дебага
     visits = sorted(visit_service.get_by_trip(trip), key=lambda v: v.id)
     cities = sorted(city_service.get_all(), key=lambda c: c.name)
 
@@ -55,7 +57,9 @@ def _update(secret: str):
 
 @blueprint.route('/<string:secret>/routes', methods=[Method.GET])
 def _routes(secret: str):
-    trip = trip_service.get_by_secret(secret)
+    # TODO: когда будет более или менее стабильная версия, вернуть эту строчку
+    # trip = trip_service.get_by_secret(secret)
+    trip = trip_service.get_by_id(int(secret)) if secret.isdigit() else trip_service.get_by_secret(secret)  # для дебага
 
     # <-- Здесь должна быть проверка данных из БД и формирование модели
 
