@@ -32,18 +32,14 @@ class VisitService:
                priority: Priority = Priority.HIGH,
                stay_time: time = None,
                date_: date = None,
-               time_: time = None,
-               day: int = None,
-               number: int = None) -> Visit:
+               time_: time = None) -> Visit:
         visit = Visit(
             trip_id=trip if isinstance(trip, int) else trip.id,
             place_id=place if isinstance(place, int) else place.id,
             priority=priority,
             stay_time=stay_time,
             date=date_,
-            time=time_,
-            day=day,
-            number=number
+            time=time_
         )
 
         self._visit_repository.save(visit)

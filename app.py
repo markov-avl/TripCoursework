@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import wtforms_json
 from flask import Flask
@@ -29,6 +30,7 @@ wtforms_json.init()
 # Расширение глобальных переменных/функций шаблонизатора
 app.jinja_env.globals['enumerate'] = enumerate
 app.jinja_env.globals['range'] = range
+app.jinja_env.globals['datetime'] = datetime
 
 if __name__ == '__main__':
     app.run(debug=True)

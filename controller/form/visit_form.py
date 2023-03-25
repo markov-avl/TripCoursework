@@ -6,7 +6,7 @@ from .form import Form
 
 class VisitForm(Form):
     place_id = IntegerField(
-        label='ID места',
+        label='Место',
         validators=[
             InputRequired(message='Обязательное поле')
         ]
@@ -21,7 +21,8 @@ class VisitForm(Form):
         label='Дата',
         validators=[
             Optional()
-        ]
+        ],
+        format=['%Y-%m-%d', '%d.%m.%Y']
     )
     time = TimeField(
         label='Время',
