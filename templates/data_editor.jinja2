@@ -1,6 +1,7 @@
 {% extends 'base.jinja2' %}
 {% from 'macro/header.jinja2' import header %}
 {% from 'macro/flash_messages.jinja2' import flash_messages %}
+{% from 'macro/datetime.jinja2' import iso_date, iso_time %}
 
 {% block title %}
     Редактор действительности
@@ -22,12 +23,12 @@
                         name="city"
                         id="cities">
                     {% for city in cities %}
-                        <option id="city-id-{{ city.id }}" value="{{ city.name }}">{{ city.name }}</option>
+                        <option id="city-id-{{ city.id }}"
+                                value="{{ city.name }}"
+                                {% if city == trip.city %}selected{% endif %}>{{ city.name }}
+                        </option>
                     {% endfor %}
                 </select>
-                <button type="submit" onclick="getCityPlaces()"
-                        class="px-6 py-2 bg-green-500 rounded-md text-white">Выбрать город
-                </button>
             </div>
             <div class="flex flex-wrap gap-2 mt-4">
                 <h2 class="basis-full">Период путешествия</h2>
@@ -35,16 +36,21 @@
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
-                       min=""
+                       min="{{ iso_date(datetime.now()) }}"
+                       max="2099-12-31"
                        type="date"
                        id="starts-at"
+                       {% if trip.starts_at %}value="{{ iso_date(trip.starts_at) }}"{% endif %}
                        required>
                 <div class="px-3 py-2">Конец:</div>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
+                       min="{{ iso_date(datetime.now()) }}"
+                       max="2099-12-31"
                        type="date"
                        id="ends-at"
+                       {% if trip.ends_at %}value="{{ iso_date(trip.ends_at) }}"{% endif %}
                        required>
             </div>
             <div class="flex flex-wrap gap-2 mt-4">
@@ -54,58 +60,138 @@
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
                        type="time"
-                       min="00:01"
+                       min="00:00"
                        max="23:59"
-                       required
-                       id="awakens-at">
+                       id="awakens-at"
+                       {% if trip.awakens_at %}value="{{ iso_time(trip.awakens_at) }}"{% endif %}
+                       required>
                 <div class="px-3 py-2">Конец:</div>
                 <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
                        type="time"
-                       min="00:01"
+                       min="00:00"
                        max="23:59"
-                       required
-                       id="rests-at">
+                       id="rests-at"
+                       {% if trip.rests_at %}value="{{ iso_time(trip.rests_at) }}"{% endif %}
+                       required>
             </div>
             <div class="flex flex-wrap gap-2 mt-4">
                 <h2 class="basis-full">Выбрать место ночлега</h2>
                 <select class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
-                        name="places"
-                        id="stay-place"></select>
+                        name="accommodation"
+                        id="accommodation">
+                    {% for place in places %}
+                        <option id="accommodation-{{ place.id }}"
+                                value="{{ place.id }}"
+                                data-name="{{ place.name }}"
+                                data-address="{{ place.address }}"
+                                {% if trip.accommodation == place %}selected{% endif %}>{{ place.name }}
+                            ({{ place.address }})
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="flex flex-wrap gap-2 mt-4">
-                <h2 class="basis-full">Добавить место в список</h2>
+                <h2 class="basis-full">Добавить место посещения в список</h2>
                 <select class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none text-sm leading-6
                               text-slate-900 placeholder-slate-400 rounded-md py-2 pl-4 ring-1 ring-slate-200 shadow-sm
                               grow shrink basis-33-minus-1rem"
-                        name="places"
-                        id="places"></select>
-                <button type="submit" onclick="addCityPlace()"
+                        name="visit"
+                        id="visit">
+                    {% for place in places %}
+                        <option id="visit-{{ place.id }}"
+                                value="{{ place.id }}"
+                                data-name="{{ place.name }}"
+                                data-address="{{ place.address }}">{{ place.name }} ({{ place.address }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" onclick="addVisit()"
                         class="px-6 py-2 bg-green-500 rounded-md text-white">Добавить место
                 </button>
             </div>
             <div class="flex flex-wrap gap-2 mt-4">
-                <table id="addedPlaces"
-                       class="mt-4 w-full border-collapse">
-                    <caption class="text-xl font-medium p-2" style="text-align: left">Выбранные места для посещения
+                <table class="mt-4 w-full border-collapse">
+                    <caption class="text-xl font-medium p-2"
+                             id="visits-table-caption"
+                             style="text-align: left"
+                             {% if not visits %}hidden{% endif %}>Выбранные места для посещения
                     </caption>
-                    <tr class="border-b">
-                        <th class="border-r">Название</th>
-                        <th class="border-r">Адрес</th>
-                        <th class="border-r">Длительность</th>
-                        <th class="border-r">Дата</th>
-                        <th class="border-r">Время</th>
-                        <th class="border-r">Обязательно</th>
-                        <th class=""></th>
-                    </tr>
+                    <tbody id="visits-table-body">
+                    {% if visits %}
+                        <tr class="border-b">
+                            <th class="border-r">Название</th>
+                            <th class="border-r">Адрес</th>
+                            <th class="border-r">Длительность</th>
+                            <th class="border-r">Дата</th>
+                            <th class="border-r">Время</th>
+                            <th class="border-r">Обязательно</th>
+                            <th class=""></th>
+                        </tr>
+                        {% for visit in visits %}
+                            <tr class="py-4">
+                                <td class="border-r" hidden>
+                                    <input name="place_id" value="{{ visit.place.id }}" hidden>
+                                </td>
+                                <td class="border-r">{{ visit.place.name }}</td>
+                                <td class="border-r">{{ visit.place.address }}</td>
+                                <td class="border-r">
+                                    <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none
+                                                                 text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2
+                                                                 pl-4 ring-1 ring-slate-200 shadow-sm grow shrink basis-33-minus-1rem"
+                                           name="stay_time"
+                                           type="time"
+                                           min="00:00"
+                                           max="23:59"
+                                           {% if visit.stay_time %}value="{{ iso_time(visit.stay_time) }}"{% endif %}
+                                           required>
+                                </td>
+                                <td class="border-r">
+                                    <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none
+                                                                 text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2
+                                                                 pl-4 ring-1 ring-slate-200 shadow-sm grow shrink basis-33-minus-1rem"
+                                           name="date"
+                                           type="date"
+                                           min="{{ iso_date(datetime.now()) }}"
+                                           max="2099-12-31"
+                                           {% if visit.date %}value="{{ iso_date(visit.date) }}"{% endif %}>
+                                </td>
+                                <td class="border-r">
+                                    <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none
+                                                                 text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2
+                                                                 pl-4 ring-1 ring-slate-200 shadow-sm grow shrink basis-33-minus-1rem"
+                                           name="time"
+                                           type="time"
+                                           min="00:00"
+                                           max="23:59"
+                                           {% if visit.time %}value="{{ iso_time(visit.time) }}"{% endif %}>
+                                </td>
+                                <td class="border-r">
+                                    <input class="focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none
+                                                                 text-sm leading-6 text-slate-900 placeholder-slate-400 rounded-md py-2
+                                                                 pl-4 ring-1 ring-slate-200 shadow-sm grow shrink basis-33-minus-1rem"
+                                           name="priority"
+                                           type="checkbox"
+                                           {% if visit.priority == Priority.HIGH %}checked{% endif %}>
+                                </td>
+                                <td>
+                                    <button class="px-6 py-2 bg-red-500 rounded-md text-white"
+                                            onclick="deleteVisit(this.parentElement.parentElement)">X
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    </tbody>
                 </table>
             </div>
             <button type="submit"
-                    onclick="routeBuilt('{{ trip.secret }}')"
-                    class="px-6 py-2 bg-green-500 rounded-md text-white mt-4">Построить маршрут
+                    id="send-data"
+                    onclick="getRoutes('{{ trip.secret }}')"
+                    class="px-6 py-2 bg-green-500 rounded-md text-white mt-4">Построить маршруты
             </button>
         </div>
     </div>

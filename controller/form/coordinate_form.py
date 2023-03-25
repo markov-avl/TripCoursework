@@ -6,7 +6,7 @@ from .form import Form
 
 class CoordinateForm(Form):
     city_id = IntegerField(
-        label='ID города',
+        label='Город',
         validators=[
             InputRequired(message='Обязательное поле')
         ]

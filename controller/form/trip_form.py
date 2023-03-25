@@ -1,4 +1,4 @@
-from wtforms import IntegerField, DateField, FieldList, FormField
+from wtforms import IntegerField, DateField, FieldList, FormField, TimeField
 from wtforms.validators import InputRequired
 
 from .visit_form import VisitForm
@@ -9,13 +9,13 @@ from .form import Form
 
 class TripForm(Form):
     city_id = IntegerField(
-        label='ID города',
+        label='Город',
         validators=[
             InputRequired(message='Обязательное поле')
         ]
     )
     accommodation_id = IntegerField(
-        label='ID ночлега',
+        label='Ночлег',
         validators=[
             InputRequired(message='Обязательное поле')
         ]
@@ -24,7 +24,8 @@ class TripForm(Form):
         label='Дата начала путешествия',
         validators=[
             InputRequired(message='Обязательное поле')
-        ]
+        ],
+        format=['%Y-%m-%d', '%d.%m.%Y']
     )
     ends_at = DateField(
         label='Дата окончания путешествия',
@@ -33,15 +34,16 @@ class TripForm(Form):
             LaterThanOrAt(message='Дата окончания путешествия должна быть позже или равна '
                                   'дате начала',
                           fieldname='starts_at')
-        ]
+        ],
+        format=['%Y-%m-%d', '%d.%m.%Y']
     )
-    awakens_at = DateField(
+    awakens_at = TimeField(
         label='Время начала периода бодрствования',
         validators=[
             InputRequired(message='Обязательное поле')
         ]
     )
-    rests_at = DateField(
+    rests_at = TimeField(
         label='Время окончания периода бодрствования',
         validators=[
             InputRequired(message='Обязательное поле'),

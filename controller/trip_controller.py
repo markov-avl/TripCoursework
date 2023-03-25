@@ -4,13 +4,14 @@ from entity import Priority
 from .form import TripForm
 from .helper import get_form, flash_form_errors, ok, flash_message
 from .method import Method
-from service import TripService, CityService, VisitService
+from service import TripService, CityService, VisitService, PlaceService
 
 blueprint = Blueprint('trips', __name__, url_prefix='/trips')
 
 trip_service = TripService()
 city_service = CityService()
 visit_service = VisitService()
+place_service = PlaceService()
 
 
 @blueprint.route('/<string:secret>', methods=[Method.GET])
@@ -20,12 +21,15 @@ def _index(secret: str):
     trip = trip_service.get_by_id(int(secret)) if secret.isdigit() else trip_service.get_by_secret(secret)  # для дебага
     visits = sorted(visit_service.get_by_trip(trip), key=lambda v: v.id)
     cities = sorted(city_service.get_all(), key=lambda c: c.name)
+    places = sorted(place_service.get_by_city(trip.city), key=lambda p: p.name) if trip.city else []
 
     return render_template(
         'data_editor.jinja2',
         trip=trip,
         visits=visits,
-        cities=cities
+        cities=cities,
+        places=places,
+        Priority=Priority
     )
 
 
