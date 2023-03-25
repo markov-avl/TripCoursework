@@ -19,8 +19,6 @@ class Visit(Entity):
     stay_time: time = Column(Time, nullable=True)
     date: date = Column(Date, nullable=True)
     time: time = Column(Time, nullable=True)
-    day: int = Column(Integer, nullable=True)
-    number: int = Column(Integer, nullable=True)
 
     trip: Trip | Relationship = relationship(Trip, lazy=LAZY_MODE)
     place: Place | Relationship = relationship(Place, lazy=LAZY_MODE)
