@@ -1,11 +1,13 @@
 from dataclasses import dataclass
+from datetime import date, time
 
 from flask import Blueprint, current_app
 
+from controller.helper import ok
 from controller.method import Method
 from database import database
-from entity import Coordinate
-from service import CityService, RoadService, CoordinateService, PlaceService
+from entity import Coordinate, Priority
+from service import CityService, RoadService, CoordinateService, PlaceService, TripService, VisitService
 
 
 @dataclass
@@ -25,6 +27,26 @@ class PlaceFixture:
     coordinate: Coordinate = None
 
 
+@dataclass
+class TripFixture:
+    city_id: int
+    accommodation_id: int
+    starts_at: date
+    ends_at: date
+    awakens_at: time
+    rests_at: time
+
+
+@dataclass
+class VisitFixture:
+    trip_id: int
+    place_id: int
+    stay_time: time
+    priority: Priority = Priority.HIGH
+    date: date = None
+    time: date = None
+
+
 def recreate_schema() -> None:
     with current_app.app_context():
         database.drop_all()
@@ -37,6 +59,8 @@ city_service = CityService()
 coordinate_service = CoordinateService()
 road_service = RoadService()
 place_service = PlaceService()
+trip_service = TripService()
+visit_service = VisitService()
 
 road_fixtures = {
     0: RoadFixture(longitude=131.88244, latitude=43.11630, neighbours=[1, 4]),
@@ -230,59 +254,85 @@ road_fixtures = {
     188: RoadFixture(longitude=131.95305, latitude=43.13754, neighbours=[65, 187]),
 }
 
-place_fixtures = {
-    0: PlaceFixture(longitude=131.88534, latitude=43.11527, name='Площадь Победы', address='Площадь Победы'),
-    1: PlaceFixture(longitude=131.88526, latitude=43.11514, name='Сухой фонтан', address='Площадь Победы'),
-    2: PlaceFixture(longitude=131.88671, latitude=43.11511, name='Стела «Город воинской славы»',
-                    address='Ленинский район'),
-    3: PlaceFixture(longitude=131.88714, latitude=43.11458, name='Спасо-Преображенский кафедральный собор',
-                    address='Ленинский район'),
-    4: PlaceFixture(longitude=131.87977, latitude=43.11670, name='Версаль', address='Фрунзенский район'),
-    5: PlaceFixture(longitude=131.89243, latitude=43.11392, name='Триумфальная арка', address='Ленинский район'),
-    6: PlaceFixture(longitude=131.89825, latitude=43.11752, name='Вид на залив "Золотой рог"',
-                    address='Ленинский район'),
-    7: PlaceFixture(longitude=131.90092, latitude=43.11446, name='Военно-исторический музей Тихоокеанского флота',
-                    address='Ленинский район, 66'),
-    8: PlaceFixture(longitude=131.91563, latitude=43.16324, name='Яхонт', address='Первореченский район, 1'),
-    9: PlaceFixture(longitude=131.88217, latitude=43.11636, name='Музей им. Арсеньева',
-                    address='Фрунзенский район, 20'),
-    10: PlaceFixture(longitude=131.93725, latitude=43.13407, name='Вираж', address='Первореченский район, 17А с1'),
-    11: PlaceFixture(longitude=131.90454, latitude=43.12578, name='Аванта', address='Ленинский район'),
-    12: PlaceFixture(longitude=131.89490, latitude=43.12514, name='Авизо', address='Ленинский район, 16/18'),
-    13: PlaceFixture(longitude=131.89344, latitude=43.12453, name='Приморская государственная картинная галерея',
-                     address='Ленинский район, 12'),
-    14: PlaceFixture(longitude=131.93369, latitude=43.14827, name='Днепровская 90а', address='Первореченский район'),
-    15: PlaceFixture(longitude=131.91081, latitude=43.16263, name='Акфес Сейо', address='Первореченский район, 103'),
-    16: PlaceFixture(longitude=131.88608, latitude=43.11697, name='Скульптура Воспоминание о моряке загранплавания',
-                     address='Ленинский район'),
-    17: PlaceFixture(longitude=131.89507, latitude=43.11410, name='Музей Ростелекома', address='Ленинский район'),
-    18: PlaceFixture(longitude=131.89123, latitude=43.11270, name='Морские прогулки на катере',
-                     address='Ленинский район'),
-    19: PlaceFixture(longitude=131.88759, latitude=43.12028, name='Сибирское Подворье', address='Ленинский район, 26А'),
-    20: PlaceFixture(longitude=131.91605, latitude=43.11489, name='Mini Hotel Graal', address='Ленинский район, 2'),
-    21: PlaceFixture(longitude=131.91416, latitude=43.11237, name='Самурай', address='Ленинский район'),
-    22: PlaceFixture(longitude=131.91497, latitude=43.11520, name='Busse Mini-hotel', address='Ленинский район, 19'),
-    23: PlaceFixture(longitude=131.90161, latitude=43.12713, name='Астория', address='Ленинский район, 44 к6'),
-    24: PlaceFixture(longitude=131.89931, latitude=43.11806, name='Арка любви', address='Ленинский район'),
-    25: PlaceFixture(longitude=131.88377, latitude=43.11973, name='Изба', address='Фрунзенский район, 3 с1'),
-    26: PlaceFixture(longitude=131.88446, latitude=43.11627, name='Антилопа', address='Фрунзенский район, 23А'),
-    27: PlaceFixture(longitude=131.93333, latitude=43.12895, name='Гранит', address='Ленинский район, 13'),
-    28: PlaceFixture(longitude=131.90313, latitude=43.16798, name='Bay garden', address='Советский район, 23Д к2'),
-    29: PlaceFixture(longitude=131.90500, latitude=43.16547, name='Дружба', address='Советский район, 3'),
-    30: PlaceFixture(longitude=131.88031, latitude=43.11731, name='Филин и Сова', address='Фрунзенский район, 5А'),
-    31: PlaceFixture(longitude=131.89068, latitude=43.11853, name='Гостевой дом Ли', address='Ленинский район, 17'),
-    32: PlaceFixture(longitude=131.91417, latitude=43.11636, name='Вид на город', address='Ленинский район'),
-    33: PlaceFixture(longitude=131.89283, latitude=43.11368, name='Музей города', address='Ленинский район, 6'),
-    34: PlaceFixture(longitude=131.88727, latitude=43.12296, name='Каштан', address='Фрунзенский район, 10А'),
-    35: PlaceFixture(longitude=131.88764, latitude=43.12219, name='Capsule Hotel ALOHA',
-                     address='Фрунзенский район, 29'),
-    36: PlaceFixture(longitude=131.89659, latitude=43.11994, name='Статуя Будды', address='Ленинский район'),
-    37: PlaceFixture(longitude=131.90218, latitude=43.11790, name='Смотровая площадка', address='Ленинский район'),
-    38: PlaceFixture(longitude=131.90589, latitude=43.16118, name='Набережная на Второй Речке',
-                     address='Советский район'),
-    39: PlaceFixture(longitude=131.88079, latitude=43.11738, name='Галерея Арка', address='Фрунзенский район, 4В'),
-    40: PlaceFixture(longitude=131.90365, latitude=43.16617, name='Томь', address='Советский район, 23А'),
-}
+place_fixtures = [
+    PlaceFixture(longitude=131.88534, latitude=43.11527, name='Площадь Победы', address='Площадь Победы'),
+    PlaceFixture(longitude=131.88526, latitude=43.11514, name='Сухой фонтан', address='Площадь Победы'),
+    PlaceFixture(longitude=131.88671, latitude=43.11511, name='Стела «Город воинской славы»',
+                 address='Ленинский район'),
+    PlaceFixture(longitude=131.88714, latitude=43.11458, name='Спасо-Преображенский кафедральный собор',
+                 address='Ленинский район'),
+    PlaceFixture(longitude=131.87977, latitude=43.11670, name='Версаль', address='Фрунзенский район'),
+    PlaceFixture(longitude=131.89243, latitude=43.11392, name='Триумфальная арка', address='Ленинский район'),
+    PlaceFixture(longitude=131.89825, latitude=43.11752, name='Вид на залив "Золотой рог"',
+                 address='Ленинский район'),
+    PlaceFixture(longitude=131.90092, latitude=43.11446, name='Военно-исторический музей Тихоокеанского флота',
+                 address='Ленинский район, 66'),
+    PlaceFixture(longitude=131.91563, latitude=43.16324, name='Яхонт', address='Первореченский район, 1'),
+    PlaceFixture(longitude=131.88217, latitude=43.11636, name='Музей им. Арсеньева',
+                 address='Фрунзенский район, 20'),
+    PlaceFixture(longitude=131.93725, latitude=43.13407, name='Вираж', address='Первореченский район, 17А с1'),
+    PlaceFixture(longitude=131.90454, latitude=43.12578, name='Аванта', address='Ленинский район'),
+    PlaceFixture(longitude=131.89490, latitude=43.12514, name='Авизо', address='Ленинский район, 16/18'),
+    PlaceFixture(longitude=131.89344, latitude=43.12453, name='Приморская государственная картинная галерея',
+                 address='Ленинский район, 12'),
+    PlaceFixture(longitude=131.93369, latitude=43.14827, name='Днепровская 90а', address='Первореченский район'),
+    PlaceFixture(longitude=131.91081, latitude=43.16263, name='Акфес Сейо', address='Первореченский район, 103'),
+    PlaceFixture(longitude=131.88608, latitude=43.11697, name='Скульптура Воспоминание о моряке загранплавания',
+                 address='Ленинский район'),
+    PlaceFixture(longitude=131.89507, latitude=43.11410, name='Музей Ростелекома', address='Ленинский район'),
+    PlaceFixture(longitude=131.89123, latitude=43.11270, name='Морские прогулки на катере',
+                 address='Ленинский район'),
+    PlaceFixture(longitude=131.88759, latitude=43.12028, name='Сибирское Подворье', address='Ленинский район, 26А'),
+    PlaceFixture(longitude=131.91605, latitude=43.11489, name='Mini Hotel Graal', address='Ленинский район, 2'),
+    PlaceFixture(longitude=131.91416, latitude=43.11237, name='Самурай', address='Ленинский район'),
+    PlaceFixture(longitude=131.91497, latitude=43.11520, name='Busse Mini-hotel', address='Ленинский район, 19'),
+    PlaceFixture(longitude=131.90161, latitude=43.12713, name='Астория', address='Ленинский район, 44 к6'),
+    PlaceFixture(longitude=131.89931, latitude=43.11806, name='Арка любви', address='Ленинский район'),
+    PlaceFixture(longitude=131.88377, latitude=43.11973, name='Изба', address='Фрунзенский район, 3 с1'),
+    PlaceFixture(longitude=131.88446, latitude=43.11627, name='Антилопа', address='Фрунзенский район, 23А'),
+    PlaceFixture(longitude=131.93333, latitude=43.12895, name='Гранит', address='Ленинский район, 13'),
+    PlaceFixture(longitude=131.90313, latitude=43.16798, name='Bay garden', address='Советский район, 23Д к2'),
+    PlaceFixture(longitude=131.90500, latitude=43.16547, name='Дружба', address='Советский район, 3'),
+    PlaceFixture(longitude=131.88031, latitude=43.11731, name='Филин и Сова', address='Фрунзенский район, 5А'),
+    PlaceFixture(longitude=131.89068, latitude=43.11853, name='Гостевой дом Ли', address='Ленинский район, 17'),
+    PlaceFixture(longitude=131.91417, latitude=43.11636, name='Вид на город', address='Ленинский район'),
+    PlaceFixture(longitude=131.89283, latitude=43.11368, name='Музей города', address='Ленинский район, 6'),
+    PlaceFixture(longitude=131.88727, latitude=43.12296, name='Каштан', address='Фрунзенский район, 10А'),
+    PlaceFixture(longitude=131.88764, latitude=43.12219, name='Capsule Hotel ALOHA',
+                 address='Фрунзенский район, 29'),
+    PlaceFixture(longitude=131.89659, latitude=43.11994, name='Статуя Будды', address='Ленинский район'),
+    PlaceFixture(longitude=131.90218, latitude=43.11790, name='Смотровая площадка', address='Ленинский район'),
+    PlaceFixture(longitude=131.90589, latitude=43.16118, name='Набережная на Второй Речке',
+                 address='Советский район'),
+    PlaceFixture(longitude=131.88079, latitude=43.11738, name='Галерея Арка', address='Фрунзенский район, 4В'),
+    PlaceFixture(longitude=131.90365, latitude=43.16617, name='Томь', address='Советский район, 23А'),
+]
+
+trip_fixtures = [
+    TripFixture(city_id=1, accommodation_id=5, starts_at=date(2023, 5, 1), ends_at=date(2023, 5, 12),
+                awakens_at=time(8), rests_at=time(21)),
+    TripFixture(city_id=1, accommodation_id=4, starts_at=date(2023, 5, 1), ends_at=date(2023, 5, 2),
+                awakens_at=time(8), rests_at=time(21))
+]
+
+visit_fixtures = [
+    VisitFixture(trip_id=1, place_id=41, stay_time=time(2, 00)),
+    VisitFixture(trip_id=1, place_id=40, stay_time=time(3, 00), date=date(2023, 5, 2)),
+    VisitFixture(trip_id=1, place_id=39, stay_time=time(2, 30), priority=Priority.LOW),
+    VisitFixture(trip_id=1, place_id=38, stay_time=time(1, 00)),
+    VisitFixture(trip_id=1, place_id=37, stay_time=time(3, 30), time=time(22, 00)),
+    VisitFixture(trip_id=1, place_id=36, stay_time=time(2, 10), date=date(2023, 5, 7), time=time(10, 00)),
+    VisitFixture(trip_id=1, place_id=35, stay_time=time(1, 30), priority=Priority.LOW),
+    VisitFixture(trip_id=1, place_id=34, stay_time=time(3, 20)),
+    VisitFixture(trip_id=1, place_id=33, stay_time=time(1, 10), time=time(15)),
+    VisitFixture(trip_id=1, place_id=32, stay_time=time(4, 00), date=date(2023, 5, 10)),
+    VisitFixture(trip_id=1, place_id=31, stay_time=time(5, 00), time=time(9, 00)),
+    VisitFixture(trip_id=2, place_id=35, stay_time=time(6, 30)),
+    VisitFixture(trip_id=2, place_id=34, stay_time=time(3, 20)),
+    VisitFixture(trip_id=2, place_id=33, stay_time=time(1, 10), date=date(2024, 5, 1)),
+    VisitFixture(trip_id=2, place_id=32, stay_time=time(4, 00)),
+    VisitFixture(trip_id=2, place_id=31, stay_time=time(5, 00))
+]
 
 
 @blueprint.route('/load', methods=[Method.GET])
@@ -293,7 +343,7 @@ def load():
     vladivostok = city_service.create('Владивосток')
 
     # Координаты
-    for fixture in [*road_fixtures.values(), *place_fixtures.values()]:
+    for fixture in [*road_fixtures.values(), *place_fixtures]:
         fixture.coordinate = coordinate_service.create(vladivostok, fixture.longitude, fixture.latitude)
 
     # Дороги
@@ -303,7 +353,25 @@ def load():
             road_fixtures[neighbour].neighbours.remove(i)
 
     # Места
-    for place_fixture in place_fixtures.values():
+    for place_fixture in place_fixtures:
         place_service.create(place_fixture.coordinate, place_fixture.name, place_fixture.address)
 
-    return 'Loaded!'
+    # Путешествия
+    for trip_fixture in trip_fixtures:
+        trip_service.create(trip_fixture.city_id,
+                            trip_fixture.accommodation_id,
+                            trip_fixture.starts_at,
+                            trip_fixture.ends_at,
+                            trip_fixture.awakens_at,
+                            trip_fixture.rests_at)
+
+    # Места для посещения
+    for visit_fixture in visit_fixtures:
+        visit_service.create(visit_fixture.trip_id,
+                             visit_fixture.place_id,
+                             visit_fixture.priority,
+                             visit_fixture.stay_time,
+                             visit_fixture.date,
+                             visit_fixture.time)
+
+    return ok(message='Successfully loaded!')

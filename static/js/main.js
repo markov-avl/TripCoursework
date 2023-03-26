@@ -308,6 +308,7 @@ const getRoutes = async (secret) => {
 }
 
 const citySelect = document.getElementById('cities')
+const accommodationSelect = document.getElementById('accommodation')
 const magnifyingArea = document.getElementById('magnifying-area')
 const magnifyingImage = document.getElementById('magnifying-image')
 const scale = 4
@@ -319,7 +320,9 @@ if (citySelect) {
         await getCityPlaces()
         clearVisitsTable()
     })
-    getCityPlaces().then()
+    if (accommodationSelect?.children?.length === 0) {
+        getCityPlaces().then()
+    }
 }
 
 magnifyingArea?.addEventListener('mousemove', event => {

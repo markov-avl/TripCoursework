@@ -22,7 +22,7 @@ class VisitForm(Form):
         validators=[
             Optional()
         ],
-        format=['%Y-%m-%d', '%d.%m.%Y']
+        format=['%d.%m.%Y', '%m/%d/%Y']
     )
     time = TimeField(
         label='Время',

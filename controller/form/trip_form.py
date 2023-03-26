@@ -25,7 +25,7 @@ class TripForm(Form):
         validators=[
             InputRequired(message='Обязательное поле')
         ],
-        format=['%Y-%m-%d', '%d.%m.%Y']
+        format=['%d.%m.%Y', '%m/%d/%Y']
     )
     ends_at = DateField(
         label='Дата окончания путешествия',
@@ -35,7 +35,7 @@ class TripForm(Form):
                                   'дате начала',
                           fieldname='starts_at')
         ],
-        format=['%Y-%m-%d', '%d.%m.%Y']
+        format=['%d.%m.%Y', '%m/%d/%Y']
     )
     awakens_at = TimeField(
         label='Время начала периода бодрствования',
