@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 from typing import Sequence
 
 from flask import abort
@@ -22,16 +22,23 @@ class CheckpointService:
     def get_by_trip(self, trip: Trip | int) -> Sequence[Checkpoint]:
         return self._checkpoint_repository.find_by_trip(trip)
 
+    def get_by_trip_ordered(self, trip: Trip | int) -> Sequence[Checkpoint]:
+        return self._checkpoint_repository.find_by_trip_ordered_by_datetime(trip)
+
     def delete_by_trip(self, trip: Trip | int) -> None:
         for checkpoint in self.get_by_trip(trip):
             self._checkpoint_repository.delete(checkpoint)
 
-    def create(self, visit: Visit | int, datetime_: datetime, day: int, number: int) -> Checkpoint:
+    def create(self,
+               visit: Visit | int,
+               datetime_: datetime,
+               distance: float = None,
+               time_to_get: time = None) -> Checkpoint:
         checkpoint = Checkpoint(
             visit_id=visit if isinstance(visit, int) else visit.id,
             datetime=datetime_,
-            day=day,
-            number=number
+            distance=distance,
+            time_to_get=time_to_get
         )
 
         self._checkpoint_repository.save(checkpoint)

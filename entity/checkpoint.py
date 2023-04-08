@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, time
 
-from sqlalchemy import Column, DateTime, Integer
+from sqlalchemy import Column, Integer, DateTime, Float, Time
 from sqlalchemy.orm import relationship, Relationship
 
 from .visit import Visit
@@ -13,7 +13,7 @@ class Checkpoint(Entity):
     id: int = Column(Integer, primary_key=True, autoincrement=True)
     visit_id: int = Column(Integer, get_foreign_key(Visit), nullable=False)
     datetime: datetime = Column(DateTime, nullable=False)
-    day: int = Column(Integer, nullable=False)
-    number: int = Column(Integer, nullable=False)
+    distance: float = Column(Float, nullable=True)
+    time_to_get: time = Column(Time, nullable=True)
 
     visit: Visit | Relationship = relationship(Visit, lazy=LAZY_MODE)

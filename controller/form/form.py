@@ -35,6 +35,6 @@ class Form(FlaskForm):
         extended_errors: list[str] = []
 
         for i, entry in enumerate(form.entries):
-            extended_errors.extend(self._get_extended_errors_from_dict(entry.form, f'{i + 1}. [{form.label.text}] '))
+            extended_errors.extend(self._get_extended_errors_from_dict(entry.form, f'{i + 1}. {form.label.text}: '))
 
         return extended_errors
