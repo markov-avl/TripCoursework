@@ -27,3 +27,13 @@ class CheckpointRepository(Repository):
             where(Visit.trip_id == trip_id)
         )
         return self._fetch_all(statement)
+
+    def find_by_trip_ordered_by_datetime(self, trip: Trip | int) -> Sequence[Checkpoint]:
+        trip_id = trip if isinstance(trip, int) else trip.id
+        statement = (
+            select(self._entity_type).
+            join(Visit).
+            where(Visit.trip_id == trip_id).
+            order_by(Checkpoint.datetime.asc())
+        )
+        return self._fetch_all(statement)

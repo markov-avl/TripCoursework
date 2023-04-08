@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for
 
 from entity import Priority
+from model import Router
 from .form import TripForm
-from .helper import get_form, flash_form_errors, ok, flash_message
+from .helper import get_form, flash_form_errors, ok, flash_errors
 from .method import Method
 from service import TripService, CityService, VisitService, PlaceService
 
@@ -65,7 +66,13 @@ def _routes(secret: str):
     # trip = trip_service.get_by_secret(secret)
     trip = trip_service.get_by_id(int(secret)) if secret.isdigit() else trip_service.get_by_secret(secret)  # для дебага
 
-    # <-- Здесь должна быть проверка данных из БД и формирование модели
+    route = Router(trip).get()
+    if route.success:
+        return '<br><br>'.join(f'Visit: {d.visit.place.name}<br>'
+                               f'Datetime: {d.datetime}<br>'
+                               f'Distance: {d.distance}<br>'
+                               f'Time to get: {d.time_to_get}'
+                               for d in route.data)
 
-    flash_message('Вы были возвращены на страницу редактирования, потому что страницы построения маршрутов ещё нет :(')
+    flash_errors(route.errors)
     return redirect(url_for('trips._index', secret=trip.secret))

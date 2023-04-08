@@ -27,9 +27,13 @@ def flash_warning(text: str) -> None:
     flash(text, 'yellow')
 
 
+def flash_errors(errors: list[str]) -> None:
+    for error in errors:
+        flash_warning(error)
+
+
 def flash_form_errors(form: Form) -> None:
-    for extended_error in form.extended_errors:
-        flash_warning(extended_error)
+    flash_errors(form.extended_errors)
 
 
 def get_response(status_code: int, **json) -> flask.Response:
